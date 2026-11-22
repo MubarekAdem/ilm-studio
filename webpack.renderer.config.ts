@@ -1,6 +1,6 @@
 import type { WebpackConfiguration } from '@electron-forge/plugin-webpack';
 
-const rules = require('./webpack.rules');
+const rules = require('./webpack.renderer.rules');
 const plugins = require('./webpack.plugins');
 
 export const rendererConfig: WebpackConfiguration = {

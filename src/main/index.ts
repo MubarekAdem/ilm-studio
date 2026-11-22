@@ -30,6 +30,14 @@ function createWindow(): void {
     },
   });
 
+  mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    console.log(`[Renderer ${level}] ${message} (${sourceId}:${line})`);
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error(`[Renderer fail-load] ${errorCode}: ${errorDescription} (${validatedURL})`);
+  });
+
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   // Show window once content is ready to avoid white flash
