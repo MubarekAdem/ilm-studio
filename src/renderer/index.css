@@ -1,0 +1,54 @@
+/* Arabic font – Amiri from Google Fonts with system fallback */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+/* RTL support utilities */
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl .arabic-text,
+.arabic-text {
+  font-family: 'Amiri', 'Traditional Arabic', 'Simplified Arabic', serif;
+  line-height: 1.8;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
