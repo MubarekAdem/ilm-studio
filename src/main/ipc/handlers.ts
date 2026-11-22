@@ -7,6 +7,7 @@ import type {
   Lecture,
   Note,
   Bookmark,
+  Chapter,
   StudySession,
   AppSettings,
   ImportAudioOptions,
@@ -86,6 +87,20 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.DB_DELETE_BOOKMARK, (_event, id: string) => {
     return database.deleteBookmark(id);
+  });
+
+  // ── Chapters ─────────────────────────────────────────────────────────
+
+  ipcMain.handle(IPC_CHANNELS.DB_GET_CHAPTERS, (_event, lectureId: string) => {
+    return database.getChapters(lectureId);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_CREATE_CHAPTER, (_event, data: Omit<Chapter, 'id' | 'createdAt'>) => {
+    return database.createChapter(data);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_DELETE_CHAPTER, (_event, id: string) => {
+    return database.deleteChapter(id);
   });
 
   // ── Study Sessions ─────────────────────────────────────────────────

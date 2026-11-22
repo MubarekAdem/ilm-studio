@@ -5,6 +5,7 @@ import type {
   Lecture,
   Note,
   Bookmark,
+  Chapter,
   StudySession,
   AppSettings,
   StudyStats,
@@ -53,6 +54,14 @@ const api = {
     ipcRenderer.invoke(IPC_CHANNELS.DB_CREATE_BOOKMARK, data),
   deleteBookmark: (id: string): Promise<boolean> =>
     ipcRenderer.invoke(IPC_CHANNELS.DB_DELETE_BOOKMARK, id),
+
+  // ── Chapters ─────────────────────────────────────────────────────────
+  getChapters: (lectureId: string): Promise<Chapter[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_GET_CHAPTERS, lectureId),
+  createChapter: (data: Omit<Chapter, 'id' | 'createdAt'>): Promise<Chapter> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_CREATE_CHAPTER, data),
+  deleteChapter: (id: string): Promise<boolean> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_DELETE_CHAPTER, id),
 
   // ── Study Sessions ─────────────────────────────────────────────────
   logSession: (data: Omit<StudySession, 'id'>): Promise<StudySession> =>

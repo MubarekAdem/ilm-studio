@@ -9,6 +9,7 @@ import type {
   Tag,
   NoteTag,
   Bookmark,
+  Chapter,
   StudySession,
   ReviewSchedule,
   AppSettings,
@@ -92,6 +93,15 @@ function createTables(): void {
       position  REAL NOT NULL DEFAULT 0,
       label     TEXT NOT NULL DEFAULT '',
       note      TEXT NOT NULL DEFAULT '',
+      createdAt TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (lectureId) REFERENCES lectures(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS chapters (
+      id        TEXT PRIMARY KEY,
+      lectureId TEXT NOT NULL,
+      startTime REAL NOT NULL DEFAULT 0,
+      title     TEXT NOT NULL,
       createdAt TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (lectureId) REFERENCES lectures(id) ON DELETE CASCADE
     );
@@ -298,6 +308,26 @@ export function createBookmark(data: Omit<Bookmark, 'id' | 'createdAt'>): Bookma
 
 export function deleteBookmark(id: string): boolean {
   return db.prepare('DELETE FROM bookmarks WHERE id = ?').run(id).changes > 0;
+}
+
+// ── Chapters ────────────────────────────────────────────────────────────
+
+export function getChapters(lectureId: string): Chapter[] {
+  return db.prepare('SELECT * FROM chapters WHERE lectureId = ? ORDER BY startTime').all(lectureId) as Chapter[];
+}
+
+export function createChapter(data: Omit<Chapter, 'id' | 'createdAt'>): Chapter {
+  const id = uuid();
+  const ts = now();
+  db.prepare(
+    `INSERT INTO chapters (id, lectureId, startTime, title, createdAt)
+     VALUES (?, ?, ?, ?, ?)`
+  ).run(id, data.lectureId, data.startTime, data.title, ts);
+  return { id, ...data, createdAt: ts };
+}
+
+export function deleteChapter(id: string): boolean {
+  return db.prepare('DELETE FROM chapters WHERE id = ?').run(id).changes > 0;
 }
 
 // ── Study Sessions ──────────────────────────────────────────────────────

@@ -27,6 +27,10 @@ import {
   Divider,
   useToast,
   Badge,
+  Input,
+  Switch,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import {
   FiPlay,
@@ -38,9 +42,12 @@ import {
   FiVolumeX,
   FiClock,
   FiTrash2,
+  FiRepeat,
+  FiList,
+  FiSliders,
 } from 'react-icons/fi';
 import { Howl } from 'howler';
-import { usePlayerStore } from '../../stores/playerStore';
+import { usePlayerStore, EqPreset } from '../../stores/playerStore';
 import { useAppStore } from '../../stores/appStore';
 
 const SPEED_OPTIONS = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5];
@@ -69,6 +76,7 @@ export const AudioPlayer: React.FC = () => {
   const rafRef = useRef<number | null>(null);
   const lastSaveTimeRef = useRef<number>(0);
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
+  const [newChapterTitle, setNewChapterTitle] = useState('');
   const toast = useToast();
 
   const {
@@ -77,16 +85,31 @@ export const AudioPlayer: React.FC = () => {
     duration,
     volume,
     playbackSpeed,
+    loopA,
+    loopB,
+    isLooping,
+    skipSilence,
+    eqPreset,
     currentLecture,
     bookmarks,
+    chapters,
+    currentChapter,
     play,
     pause,
     seek,
     setSpeed,
     setVolume,
+    setLoopA,
+    setLoopB,
+    clearLoop,
+    setSkipSilence,
+    setEqPreset,
     addBookmark,
     removeBookmark,
     loadBookmarks,
+    loadChapters,
+    addChapter,
+    deleteChapter,
   } = usePlayerStore();
 
   const lecturesList = useAppStore((s) => s.lecturesList);
@@ -104,7 +127,7 @@ export const AudioPlayer: React.FC = () => {
           pause();
           toast({
             title: 'Sleep timer ended',
-            description: 'Audio playback paused automatically.',
+            description: 'Playback paused.',
             status: 'info',
             duration: 3000,
             isClosable: true,
@@ -123,13 +146,11 @@ export const AudioPlayer: React.FC = () => {
     pause();
     if (!currentLecture) return;
 
-    // Mark as 100% completed
     window.api.updateLecture(currentLecture.id, {
       completionPct: 100,
       lastPosition: duration,
     }).catch(console.error);
 
-    // Find next lecture in sequence
     const currentIndex = lecturesList.findIndex((l) => l.id === currentLecture.id);
     if (currentIndex >= 0 && currentIndex < lecturesList.length - 1) {
       const nextLecture = lecturesList[currentIndex + 1];
@@ -147,10 +168,9 @@ export const AudioPlayer: React.FC = () => {
       }
     } else {
       toast({
-        title: 'Series completed! 🎉',
-        description: 'You have finished all lectures in this course.',
+        title: 'Course completed! 🎉',
         status: 'success',
-        duration: 5000,
+        duration: 4000,
         isClosable: true,
       });
     }
@@ -170,6 +190,7 @@ export const AudioPlayer: React.FC = () => {
     if (!currentLecture?.audioPath) return;
 
     loadBookmarks(currentLecture.id);
+    loadChapters(currentLecture.id);
 
     const howl = new Howl({
       src: [currentLecture.audioPath],
@@ -200,7 +221,7 @@ export const AudioPlayer: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLecture?.id, currentLecture?.audioPath]);
 
-  // Sync play/pause state to Howl
+  // Sync play/pause state
   useEffect(() => {
     const howl = howlRef.current;
     if (!howl) return;
@@ -222,12 +243,24 @@ export const AudioPlayer: React.FC = () => {
     howlRef.current?.rate(playbackSpeed);
   }, [playbackSpeed]);
 
-  // Animation loop for progress and periodic position persistence
+  // Animation loop: handles progress, A-B loop boundary check, and DB persistence
   const updateProgress = useCallback(() => {
     const howl = howlRef.current;
     if (howl && howl.playing()) {
       const pos = howl.seek() as number;
-      usePlayerStore.setState({ currentTime: pos });
+
+      // A-B Loop boundary check
+      const { loopA, loopB, isLooping } = usePlayerStore.getState();
+      if (isLooping && loopA !== null && loopB !== null && loopB > loopA) {
+        if (pos >= loopB) {
+          howl.seek(loopA);
+          usePlayerStore.getState().setCurrentTime(loopA);
+          rafRef.current = requestAnimationFrame(updateProgress);
+          return;
+        }
+      }
+
+      usePlayerStore.getState().setCurrentTime(pos);
 
       // Save position to SQLite every 5 seconds
       const now = Date.now();
@@ -249,7 +282,6 @@ export const AudioPlayer: React.FC = () => {
     if (!currentLecture) return;
     if (isPlaying) {
       pause();
-      // Save position on pause
       if (howlRef.current) {
         const pos = howlRef.current.seek() as number;
         const dur = howlRef.current.duration();
@@ -279,18 +311,61 @@ export const AudioPlayer: React.FC = () => {
     handleSeek(newTime);
   };
 
+  // A-B Loop handler
+  const handleLoopClick = () => {
+    if (loopA === null) {
+      setLoopA(currentTime);
+      toast({
+        title: `Loop Point A set at ${formatTime(currentTime)}`,
+        description: 'Click again at Point B to begin looping.',
+        status: 'info',
+        duration: 2000,
+        isClosable: true,
+      });
+    } else if (loopB === null) {
+      if (currentTime > loopA) {
+        setLoopB(currentTime);
+        toast({
+          title: `Loop Active: ${formatTime(loopA)} ↔ ${formatTime(currentTime)}`,
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: 'Point B must be after Point A',
+          status: 'warning',
+          duration: 2000,
+          isClosable: true,
+        });
+      }
+    } else {
+      clearLoop();
+      toast({
+        title: 'A-B Loop cleared',
+        status: 'info',
+        duration: 1500,
+        isClosable: true,
+      });
+    }
+  };
+
   const handleAddBookmark = () => {
     if (currentLecture) {
       addBookmark(`Bookmark at ${formatTime(currentTime)}`);
-      toast({
-        title: 'Bookmark saved',
-        description: formatTime(currentTime),
-        status: 'success',
-        duration: 1500,
-        isClosable: true,
-        position: 'bottom-right',
-      });
     }
+  };
+
+  const handleCreateChapter = async () => {
+    if (!newChapterTitle.trim()) return;
+    await addChapter(newChapterTitle.trim(), Math.round(currentTime));
+    setNewChapterTitle('');
+    toast({
+      title: 'Chapter marker added',
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    });
   };
 
   if (!currentLecture) {
@@ -311,9 +386,13 @@ export const AudioPlayer: React.FC = () => {
     );
   }
 
+  // Calculate loop region positions for progress bar visualization
+  const loopA_pct = loopA !== null && duration > 0 ? (loopA / duration) * 100 : null;
+  const loopB_pct = loopB !== null && duration > 0 ? (loopB / duration) * 100 : null;
+
   return (
     <Box
-      h="72px"
+      h="84px"
       bg={barBg}
       borderTop="1px solid"
       borderColor={borderColor}
@@ -321,46 +400,100 @@ export const AudioPlayer: React.FC = () => {
       display="flex"
       flexDirection="column"
       justifyContent="center"
-      boxShadow="0 -2px 10px rgba(0,0,0,0.15)"
+      boxShadow="0 -3px 12px rgba(0,0,0,0.2)"
     >
-      {/* Progress bar */}
-      <Slider
-        aria-label="Audio progress"
-        value={currentTime}
-        min={0}
-        max={duration || 1}
-        step={0.1}
-        onChange={handleSeek}
-        size="sm"
-        colorScheme="green"
-        mb={1}
-      >
-        <SliderTrack h="4px" borderRadius="full">
-          <SliderFilledTrack />
-        </SliderTrack>
-        <SliderThumb boxSize={3.5} />
-      </Slider>
+      {/* Progress bar container with A-B loop shading & chapter ticks */}
+      <Box position="relative" mb={1} pt={1}>
+        {/* Shaded loop region */}
+        {loopA_pct !== null && loopB_pct !== null && (
+          <Box
+            position="absolute"
+            top="5px"
+            left={`${loopA_pct}%`}
+            width={`${loopB_pct - loopA_pct}%`}
+            height="4px"
+            bg="rgba(77, 179, 127, 0.45)"
+            borderRadius="full"
+            pointerEvents="none"
+            zIndex={1}
+          />
+        )}
+
+        {/* Chapter marker ticks */}
+        {chapters.map((ch) => {
+          const pct = duration > 0 ? (ch.startTime / duration) * 100 : 0;
+          return (
+            <Tooltip key={ch.id} label={`${ch.title} (${formatTime(ch.startTime)})`}>
+              <Box
+                position="absolute"
+                top="4px"
+                left={`${pct}%`}
+                width="2px"
+                height="6px"
+                bg="yellow.400"
+                borderRadius="full"
+                cursor="pointer"
+                zIndex={2}
+                onClick={() => handleSeek(ch.startTime)}
+              />
+            </Tooltip>
+          );
+        })}
+
+        <Slider
+          aria-label="Audio progress"
+          value={currentTime}
+          min={0}
+          max={duration || 1}
+          step={0.1}
+          onChange={handleSeek}
+          size="sm"
+          colorScheme="green"
+        >
+          <SliderTrack h="4px" borderRadius="full">
+            <SliderFilledTrack />
+          </SliderTrack>
+          <SliderThumb boxSize={3.5} />
+        </Slider>
+      </Box>
 
       {/* Controls row */}
       <Flex align="center" justify="space-between">
-        {/* Left: Lecture title and duration */}
-        <Box flex={1} minW={0} mr={4}>
-          <Text fontSize="sm" fontWeight="semibold" noOfLines={1}>
-            {currentLecture.title}
-          </Text>
+        {/* Left: Lecture title, chapter title, duration */}
+        <Box flex={1} minW={0} mr={3}>
           <HStack spacing={2}>
-            <Text fontSize="xs" color="gray.400">
+            <Text fontSize="sm" fontWeight="bold" noOfLines={1}>
+              {currentLecture.title}
+            </Text>
+            {currentChapter && (
+              <Badge colorScheme="yellow" fontSize="2xs" maxW="180px" noOfLines={1}>
+                § {currentChapter.title}
+              </Badge>
+            )}
+          </HStack>
+          <HStack spacing={2} mt={0.5}>
+            <Text fontSize="2xs" color="gray.400">
               {formatTime(currentTime)} / {formatTime(duration)}
             </Text>
+            {isLooping && loopA !== null && loopB !== null && (
+              <Badge colorScheme="green" fontSize="2xs">
+                Loop: {formatTime(loopA)}–{formatTime(loopB)}
+              </Badge>
+            )}
+            {eqPreset !== 'normal' && (
+              <Badge colorScheme="blue" fontSize="2xs">
+                EQ: {eqPreset}
+              </Badge>
+            )}
             {sleepTimerRemaining && (
               <Badge colorScheme="purple" fontSize="2xs">
-                ⏰ {Math.ceil(sleepTimerRemaining / 60)}m left
+                ⏰ {Math.ceil(sleepTimerRemaining / 60)}m
               </Badge>
             )}
           </HStack>
         </Box>
 
-        {/* Center: Playback controls */}
+        {/* Center: Playback & A-B Loop controls */}
         <HStack spacing={2}>
           <Tooltip label="Rewind 10s">
             <IconButton
@@ -391,11 +524,32 @@ export const AudioPlayer: React.FC = () => {
               onClick={handleSkipForward}
             />
           </Tooltip>
+
+          {/* A-B Loop Button */}
+          <Tooltip
+            label={
+              loopA === null
+                ? 'Set Loop Point A'
+                : loopB === null
+                ? 'Set Loop Point B'
+                : 'Clear A-B Loop'
+            }
+          >
+            <Button
+              size="xs"
+              variant={isLooping ? 'solid' : loopA !== null ? 'outline' : 'ghost'}
+              colorScheme={isLooping ? 'green' : loopA !== null ? 'yellow' : undefined}
+              leftIcon={<FiRepeat />}
+              onClick={handleLoopClick}
+            >
+              {loopA === null ? 'A-B' : loopB === null ? `A: ${formatTime(loopA)}` : 'Looping'}
+            </Button>
+          </Tooltip>
         </HStack>
 
-        {/* Right: Speed, Volume, Sleep Timer, Bookmarks */}
-        <HStack spacing={2} flex={1} justify="flex-end">
-          {/* Speed selector */}
+        {/* Right: Speed, EQ, Chapters, Volume, Bookmarks */}
+        <HStack spacing={1.5} flex={1} justify="flex-end">
+          {/* Playback Speed */}
           <Menu>
             <Tooltip label="Playback Speed">
               <MenuButton
@@ -404,12 +558,13 @@ export const AudioPlayer: React.FC = () => {
                 size="sm"
                 fontSize="xs"
                 fontWeight="bold"
-                minW="42px"
+                minW="40px"
+                px={1}
               >
                 {playbackSpeed}x
               </MenuButton>
             </Tooltip>
-            <MenuList minW="85px" py={1}>
+            <MenuList minW="80px" py={1}>
               {SPEED_OPTIONS.map((speed) => (
                 <MenuItem
                   key={speed}
@@ -423,6 +578,147 @@ export const AudioPlayer: React.FC = () => {
               ))}
             </MenuList>
           </Menu>
+
+          {/* Equalizer / Audio Enhancement */}
+          <Menu>
+            <Tooltip label="Audio Enhancements & EQ">
+              <MenuButton
+                as={IconButton}
+                aria-label="Equalizer"
+                icon={<FiSliders />}
+                variant="ghost"
+                size="sm"
+                color={eqPreset !== 'normal' ? 'blue.300' : undefined}
+              />
+            </Tooltip>
+            <MenuList minW="170px" py={1}>
+              <Box px={3} py={1}>
+                <Text fontSize="2xs" fontWeight="bold" color="gray.400" textTransform="uppercase">
+                  Audio Enhancements
+                </Text>
+              </Box>
+              <MenuItem
+                fontSize="xs"
+                fontWeight={eqPreset === 'normal' ? 'bold' : 'normal'}
+                onClick={() => setEqPreset('normal')}
+              >
+                Normal (Flat)
+              </MenuItem>
+              <MenuItem
+                fontSize="xs"
+                fontWeight={eqPreset === 'clarity' ? 'bold' : 'normal'}
+                onClick={() => setEqPreset('clarity')}
+              >
+                🎙️ Voice Clarity Boost
+              </MenuItem>
+              <MenuItem
+                fontSize="xs"
+                fontWeight={eqPreset === 'cassette' ? 'bold' : 'normal'}
+                onClick={() => setEqPreset('cassette')}
+              >
+                📻 Tape De-Hiss & Filter
+              </MenuItem>
+              <MenuItem
+                fontSize="xs"
+                fontWeight={eqPreset === 'bass' ? 'bold' : 'normal'}
+                onClick={() => setEqPreset('bass')}
+              >
+                🔊 Rich Vocal Warmth
+              </MenuItem>
+            </MenuList>
+          </Menu>
+
+          {/* Chapter Section Navigator */}
+          <Popover placement="top-end">
+            <PopoverTrigger>
+              <Box>
+                <Tooltip label="Lecture Chapters">
+                  <IconButton
+                    aria-label="Chapters"
+                    icon={<FiList />}
+                    variant="ghost"
+                    size="sm"
+                    color={chapters.length > 0 ? 'yellow.300' : undefined}
+                  />
+                </Tooltip>
+              </Box>
+            </PopoverTrigger>
+            <PopoverContent w="300px" bg={useColorModeValue('white', '#16213e')}>
+              <PopoverArrow />
+              <PopoverCloseButton size="sm" />
+              <PopoverHeader fontWeight="bold" fontSize="xs">
+                Lecture Chapters ({chapters.length})
+              </PopoverHeader>
+              <PopoverBody maxH="220px" overflowY="auto" px={2} py={2}>
+                <VStack spacing={1.5} align="stretch">
+                  {chapters.map((ch) => (
+                    <HStack
+                      key={ch.id}
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      bg={currentChapter?.id === ch.id ? 'whiteAlpha.150' : 'transparent'}
+                      _hover={{ bg: useColorModeValue('blackAlpha.50', 'whiteAlpha.100') }}
+                      justify="space-between"
+                      cursor="pointer"
+                      onClick={() => {
+                        handleSeek(ch.startTime);
+                        play();
+                      }}
+                    >
+                      <HStack spacing={2} flex={1} minW={0}>
+                        <Badge colorScheme="yellow" fontSize="2xs">
+                          {formatTime(ch.startTime)}
+                        </Badge>
+                        <Text
+                          fontSize="xs"
+                          noOfLines={1}
+                          fontWeight={currentChapter?.id === ch.id ? 'bold' : 'normal'}
+                        >
+                          {ch.title}
+                        </Text>
+                      </HStack>
+                      <IconButton
+                        aria-label="Delete chapter"
+                        icon={<FiTrash2 />}
+                        size="2xs"
+                        variant="ghost"
+                        color="red.400"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteChapter(ch.id);
+                        }}
+                      />
+                    </HStack>
+                  ))}
+                  {chapters.length === 0 && (
+                    <Text fontSize="2xs" color="gray.500" textAlign="center" py={1}>
+                      No chapters defined for this lecture.
+                    </Text>
+                  )}
+
+                  <Divider />
+
+                  <HStack spacing={1}>
+                    <Input
+                      placeholder={`Chapter at ${formatTime(currentTime)}`}
+                      value={newChapterTitle}
+                      onChange={(e) => setNewChapterTitle(e.target.value)}
+                      size="xs"
+                    />
+                    <Button
+                      size="xs"
+                      colorScheme="green"
+                      onClick={handleCreateChapter}
+                      flexShrink={0}
+                    >
+                      + Add
+                    </Button>
+                  </HStack>
+                </VStack>
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
 
           {/* Sleep Timer */}
           <Menu>
@@ -445,9 +741,9 @@ export const AudioPlayer: React.FC = () => {
                     setSleepTimerRemaining(opt.minutes > 0 ? opt.minutes * 60 : null);
                     if (opt.minutes > 0) {
                       toast({
-                        title: `Sleep timer set for ${opt.minutes} min`,
+                        title: `Sleep timer: ${opt.minutes}m`,
                         status: 'info',
-                        duration: 2000,
+                        duration: 1500,
                         isClosable: true,
                       });
                     }
@@ -459,8 +755,8 @@ export const AudioPlayer: React.FC = () => {
             </MenuList>
           </Menu>
 
-          {/* Volume slider */}
-          <HStack spacing={1} w="110px">
+          {/* Volume */}
+          <HStack spacing={1} w="95px">
             <IconButton
               aria-label="Toggle mute"
               icon={volume === 0 ? <FiVolumeX /> : <FiVolume2 />}
@@ -485,11 +781,11 @@ export const AudioPlayer: React.FC = () => {
             </Slider>
           </HStack>
 
-          {/* Bookmarks Popover List */}
+          {/* Bookmarks */}
           <Popover placement="top-end">
             <PopoverTrigger>
               <Box>
-                <Tooltip label="Lecture Bookmarks">
+                <Tooltip label="Bookmarks">
                   <IconButton
                     aria-label="View bookmarks"
                     icon={<FiBookmark />}
@@ -554,7 +850,7 @@ export const AudioPlayer: React.FC = () => {
                   ))}
                   {bookmarks.length === 0 && (
                     <Text fontSize="2xs" color="gray.500" textAlign="center" py={2}>
-                      No bookmarks saved yet. Click "+ Add Current" to mark a spot.
+                      No bookmarks saved yet.
                     </Text>
                   )}
                 </VStack>

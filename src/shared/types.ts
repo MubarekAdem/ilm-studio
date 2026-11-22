@@ -57,6 +57,14 @@ export interface Bookmark {
   createdAt: string;
 }
 
+export interface Chapter {
+  id: string;
+  lectureId: string;
+  startTime: number; // seconds
+  title: string;
+  createdAt: string;
+}
+
 export interface StudySession {
   id: string;
   lectureId: string;
@@ -100,6 +108,9 @@ export const IPC_CHANNELS = {
   DB_GET_BOOKMARKS: 'db:get-bookmarks',
   DB_CREATE_BOOKMARK: 'db:create-bookmark',
   DB_DELETE_BOOKMARK: 'db:delete-bookmark',
+  DB_GET_CHAPTERS: 'db:get-chapters',
+  DB_CREATE_CHAPTER: 'db:create-chapter',
+  DB_DELETE_CHAPTER: 'db:delete-chapter',
   DB_LOG_SESSION: 'db:log-session',
   DB_GET_SESSIONS: 'db:get-sessions',
   DB_GET_SETTINGS: 'db:get-settings',
