@@ -15,6 +15,9 @@ function getQuranDbPath(): string {
   const resourcesPath = path.join(process.resourcesPath, 'assets', 'quran.db');
   if (fs.existsSync(resourcesPath)) return resourcesPath;
 
+  const directResource = path.join(process.resourcesPath, 'quran.db');
+  if (fs.existsSync(directResource)) return directResource;
+
   const fallbackPath = path.join(__dirname, '..', '..', 'assets', 'quran.db');
   if (fs.existsSync(fallbackPath)) return fallbackPath;
 

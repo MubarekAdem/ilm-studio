@@ -22,6 +22,7 @@ import {
   FiAlignRight,
   FiAlignLeft,
   FiBookOpen,
+  FiDownload,
 } from 'react-icons/fi';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -154,6 +155,71 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
     }
   }, [lectureId, editor, noteId, currentTime, currentPdfPage, toast]);
 
+  // Export note to Markdown
+  const handleExportMarkdown = () => {
+    if (!editor || !lecture) return;
+    const json = editor.getJSON();
+    let md = `# ${lecture.title}\n\n*Lecture Study Notes — Ilm Studio*\n\n---\n\n`;
+
+    const processNode = (node: any): string => {
+      if (!node) return '';
+      if (node.type === 'heading') {
+        const level = node.attrs?.level || 2;
+        const text = node.content?.map(processNode).join('') || '';
+        return `${'#'.repeat(level)} ${text}\n\n`;
+      }
+      if (node.type === 'paragraph') {
+        const text = node.content?.map(processNode).join('') || '';
+        return `${text}\n\n`;
+      }
+      if (node.type === 'bulletList') {
+        return (
+          node.content
+            ?.map((item: any) => `- ${item.content?.map(processNode).join('').trim()}`)
+            .join('\n') + '\n\n'
+        );
+      }
+      if (node.type === 'blockquote') {
+        const text = node.content?.map(processNode).join('').trim() || '';
+        return `> ${text.replace(/\n/g, '\n> ')}\n\n`;
+      }
+      if (node.type === 'text') {
+        let text = node.text || '';
+        if (node.marks) {
+          for (const m of node.marks) {
+            if (m.type === 'bold') text = `**${text}**`;
+            if (m.type === 'italic') text = `*${text}*`;
+          }
+        }
+        return text;
+      }
+      if (node.content) {
+        return node.content.map(processNode).join('');
+      }
+      return '';
+    };
+
+    if (json.content) {
+      md += json.content.map(processNode).join('');
+    }
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${lecture.title.replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '_')}_notes.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'Notes exported to Markdown',
+      description: 'Downloaded to your system',
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    });
+  };
+
   // Insert current audio timestamp chip
   const handleInsertTimestamp = () => {
     if (!editor) return;
@@ -250,15 +316,28 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
             </Text>
           </HStack>
         </Box>
-        <Button
-          size="sm"
-          colorScheme="green"
-          leftIcon={<FiSave />}
-          onClick={handleSave}
-          isLoading={saving}
-        >
-          Save
-        </Button>
+        <HStack spacing={2}>
+          <Tooltip label="Export Notes to Markdown (.md)">
+            <Button
+              size="sm"
+              variant="outline"
+              colorScheme="green"
+              leftIcon={<FiDownload />}
+              onClick={handleExportMarkdown}
+            >
+              Export
+            </Button>
+          </Tooltip>
+          <Button
+            size="sm"
+            colorScheme="green"
+            leftIcon={<FiSave />}
+            onClick={handleSave}
+            isLoading={saving}
+          >
+            Save
+          </Button>
+        </HStack>
       </HStack>
 
       <Divider borderColor={borderColor} />

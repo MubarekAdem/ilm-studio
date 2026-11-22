@@ -13,6 +13,7 @@ const config: ForgeConfig = {
     asar: true,
     name: 'ilm-studio',
     executableName: 'ilm-studio',
+    extraResource: ['./assets/quran.db'],
   },
   makers: [
     new MakerZIP({}, ['linux']),
