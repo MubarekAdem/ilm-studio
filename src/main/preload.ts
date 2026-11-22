@@ -9,6 +9,9 @@ import type {
   StudySession,
   AppSettings,
   StudyStats,
+  Surah,
+  Ayah,
+  LibrarySearchResult,
   ImportAudioOptions,
   ImportPdfOptions,
   OpenDialogOptions,
@@ -78,6 +81,16 @@ const api = {
   // ── Stats ───────────────────────────────────────────────────────────
   getStats: (): Promise<StudyStats> =>
     ipcRenderer.invoke(IPC_CHANNELS.DB_GET_STATS),
+  searchLibrary: (query: string): Promise<LibrarySearchResult[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_SEARCH_LIBRARY, query),
+
+  // ── Quran ────────────────────────────────────────────────────────────
+  getSurahs: (): Promise<Surah[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.QURAN_GET_SURAHS),
+  getAyah: (verseKey: string): Promise<Ayah | null> =>
+    ipcRenderer.invoke(IPC_CHANNELS.QURAN_GET_AYAH, verseKey),
+  searchQuran: (query: string, limit?: number): Promise<Ayah[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.QURAN_SEARCH, query, limit),
 
   // ── File operations ─────────────────────────────────────────────────
   importAudio: (args: ImportAudioOptions | string, shouldCopy = false): Promise<any> =>

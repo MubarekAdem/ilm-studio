@@ -21,11 +21,14 @@ import {
   FiFileText,
   FiAlignRight,
   FiAlignLeft,
+  FiBookOpen,
 } from 'react-icons/fi';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useAppStore } from '../../stores/appStore';
 import { usePlayerStore } from '../../stores/playerStore';
+import { QuranLookupModal } from '../Quran/QuranLookupModal';
+import type { Ayah } from '../../../shared/types';
 
 interface NoteEditorProps {
   lectureId: string | null;
@@ -43,6 +46,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
   const [noteId, setNoteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [isRTL, setIsRTL] = useState(false);
+  const [isQuranOpen, setIsQuranOpen] = useState(false);
   const toast = useToast();
 
   const lecturesList = useAppStore((s) => s.lecturesList);
@@ -163,6 +167,20 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
     if (!editor) return;
     const html = `<button class="page-chip" data-page="${currentPdfPage}" style="background: rgba(212, 168, 67, 0.3); border: 1px solid #d4a843; color: #e6c85c; padding: 2px 7px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; margin: 0 4px; display: inline-flex; align-items: center; gap: 3px;">📄 p. ${currentPdfPage}</button>&nbsp;`;
     editor.chain().focus().insertContent(html).run();
+  };
+
+  // Insert formatted Quran Ayah quote block
+  const handleInsertAyah = (ayah: Ayah) => {
+    if (!editor) return;
+    const ayahHtml = `
+      <blockquote class="quran-quote" style="border-right: 4px solid #2d6a4f; background: rgba(45, 106, 79, 0.15); padding: 12px 16px; margin: 12px 0; border-radius: 6px;" dir="rtl">
+        <p style="font-family: 'Amiri', serif; font-size: 20px; color: #4db37f; margin: 0 0 8px 0; line-height: 2.1; font-weight: 500;">${ayah.text_uthmani}</p>
+        <p dir="ltr" style="font-size: 13.5px; color: #cbd5e1; margin: 0; font-style: italic; line-height: 1.6;">"${ayah.translation_en}"</p>
+        <p dir="ltr" style="font-size: 11px; color: #94a3b8; margin: 6px 0 0 0; font-weight: 600;">— Surah ${ayah.surah_name_simple || ''} [${ayah.verse_key}]</p>
+      </blockquote>
+      <p></p>
+    `;
+    editor.chain().focus().insertContent(ayahHtml).run();
   };
 
   // Handle click on timestamp or page chips
@@ -327,6 +345,18 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
           </Button>
         </Tooltip>
 
+        <Tooltip label="Lookup & Insert Quran Ayah (Uthmani + Translation)">
+          <Button
+            size="xs"
+            colorScheme="teal"
+            variant="outline"
+            leftIcon={<FiBookOpen />}
+            onClick={() => setIsQuranOpen(true)}
+          >
+            📖 Quran
+          </Button>
+        </Tooltip>
+
         <Box w="1px" h="18px" bg={borderColor} mx={1} />
 
         {/* RTL / LTR Toggle */}
@@ -369,6 +399,13 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
       >
         <EditorContent editor={editor} />
       </Box>
+
+      {/* Quran Verse Lookup Modal */}
+      <QuranLookupModal
+        isOpen={isQuranOpen}
+        onClose={() => setIsQuranOpen(false)}
+        onInsertAyah={handleInsertAyah}
+      />
     </VStack>
   );
 };

@@ -65,6 +65,36 @@ export interface Chapter {
   createdAt: string;
 }
 
+export interface Surah {
+  id: number;
+  name_arabic: string;
+  name_simple: string;
+  name_english: string;
+  revelation_place: string;
+  verses_count: number;
+}
+
+export interface Ayah {
+  id: number;
+  surah_id: number;
+  ayah_number: number;
+  verse_key: string; // e.g. "2:255"
+  text_uthmani: string;
+  translation_en: string;
+  surah_name_arabic?: string;
+  surah_name_simple?: string;
+  surah_name_english?: string;
+}
+
+export interface LibrarySearchResult {
+  type: 'series' | 'lecture' | 'note';
+  id: string;
+  title: string;
+  snippet: string;
+  seriesId?: string;
+  lectureId?: string;
+}
+
 export interface StudySession {
   id: string;
   lectureId: string;
@@ -116,6 +146,12 @@ export const IPC_CHANNELS = {
   DB_GET_SETTINGS: 'db:get-settings',
   DB_UPDATE_SETTING: 'db:update-setting',
   DB_GET_STATS: 'db:get-stats',
+  DB_SEARCH_LIBRARY: 'db:search-library',
+
+  // Quran
+  QURAN_GET_SURAHS: 'quran:get-surahs',
+  QURAN_GET_AYAH: 'quran:get-ayah',
+  QURAN_SEARCH: 'quran:search',
 
   // File operations
   FILE_IMPORT_AUDIO: 'file:import-audio',

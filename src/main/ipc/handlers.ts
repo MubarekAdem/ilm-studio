@@ -15,6 +15,7 @@ import type {
   OpenDialogOptions,
 } from '../../shared/types';
 import * as database from '../database';
+import * as quranDb from '../database/quran';
 
 export function registerIpcHandlers(): void {
   // ── Series ──────────────────────────────────────────────────────────
@@ -128,6 +129,24 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.DB_GET_STATS, () => {
     return database.getStats();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_SEARCH_LIBRARY, (_event, query: string) => {
+    return database.searchLibrary(query);
+  });
+
+  // ── Quran ────────────────────────────────────────────────────────────
+
+  ipcMain.handle(IPC_CHANNELS.QURAN_GET_SURAHS, () => {
+    return quranDb.getSurahs();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.QURAN_GET_AYAH, (_event, verseKey: string) => {
+    return quranDb.getAyah(verseKey);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.QURAN_SEARCH, (_event, query: string, limit?: number) => {
+    return quranDb.searchQuran(query, limit);
   });
 
   // ── File Operations ─────────────────────────────────────────────────

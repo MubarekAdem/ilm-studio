@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { initDatabase } from './database';
+import { initQuranDatabase } from './database/quran';
 import { registerIpcHandlers } from './ipc/handlers';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -52,6 +53,7 @@ function createWindow(): void {
 
 app.on('ready', () => {
   initDatabase();
+  initQuranDatabase();
   registerIpcHandlers();
   createWindow();
 });

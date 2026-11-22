@@ -33,6 +33,8 @@ import {
   FiMoreVertical,
   FiTrash2,
   FiFolderPlus,
+  FiSearch,
+  FiBookOpen,
 } from 'react-icons/fi';
 import { useAppStore } from '../../stores/appStore';
 import { usePlayerStore } from '../../stores/playerStore';
@@ -209,6 +211,8 @@ export const Sidebar: React.FC = () => {
     selectSeries,
     loadSeries,
     loadLectures,
+    setSearchOpen,
+    setQuranOpen,
   } = useAppStore();
 
   const { colorMode, toggleColorMode } = useColorMode();
@@ -343,6 +347,32 @@ export const Sidebar: React.FC = () => {
             onClick={() => setView('dashboard')}
           >
             Dashboard
+          </Button>
+
+          <Button
+            variant="ghost"
+            justifyContent="space-between"
+            leftIcon={<FiSearch />}
+            size="sm"
+            color="gray.400"
+            _hover={{ color: 'white', bg: 'whiteAlpha.100' }}
+            onClick={() => setSearchOpen(true)}
+          >
+            <Text fontSize="xs">Quick Search</Text>
+            <Badge fontSize="2xs" colorScheme="gray" variant="subtle">Ctrl+K</Badge>
+          </Button>
+
+          <Button
+            variant="ghost"
+            justifyContent="space-between"
+            leftIcon={<FiBookOpen />}
+            size="sm"
+            color="gray.400"
+            _hover={{ color: 'white', bg: 'whiteAlpha.100' }}
+            onClick={() => setQuranOpen(true)}
+          >
+            <Text fontSize="xs">Quran Lookup</Text>
+            <Badge fontSize="2xs" colorScheme="green" variant="subtle">Ctrl+Q</Badge>
           </Button>
         </VStack>
 

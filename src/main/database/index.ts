@@ -14,6 +14,7 @@ import type {
   ReviewSchedule,
   AppSettings,
   StudyStats,
+  LibrarySearchResult,
 } from '../../shared/types';
 
 let db: Database.Database;
@@ -470,4 +471,77 @@ export function getStats(): StudyStats {
 
 export function getDb(): Database.Database {
   return db;
+}
+
+// ── Search ──────────────────────────────────────────────────────────────
+
+export function searchLibrary(query: string): LibrarySearchResult[] {
+  if (!query.trim()) return [];
+  const q = `%${query.trim()}%`;
+  const results: LibrarySearchResult[] = [];
+
+  // Search series
+  const seriesRows = db
+    .prepare('SELECT id, title, scholar, topic FROM series WHERE title LIKE ? OR scholar LIKE ? OR topic LIKE ? LIMIT 10')
+    .all(q, q, q) as { id: string; title: string; scholar: string; topic: string }[];
+
+  for (const s of seriesRows) {
+    results.push({
+      type: 'series',
+      id: s.id,
+      title: s.title,
+      snippet: `Course by ${s.scholar || 'Unknown'} • ${s.topic || 'General'}`,
+      seriesId: s.id,
+    });
+  }
+
+  // Search lectures
+  const lectureRows = db
+    .prepare('SELECT id, seriesId, title FROM lectures WHERE title LIKE ? LIMIT 15')
+    .all(q) as { id: string; seriesId: string | null; title: string }[];
+
+  for (const l of lectureRows) {
+    results.push({
+      type: 'lecture',
+      id: l.id,
+      title: l.title,
+      snippet: 'Lecture audio / study session',
+      lectureId: l.id,
+      seriesId: l.seriesId ?? undefined,
+    });
+  }
+
+  // Search notes
+  const noteRows = db
+    .prepare(`
+      SELECT n.id, n.lectureId, n.content, l.title as lectureTitle, l.seriesId
+      FROM notes n
+      JOIN lectures l ON l.id = n.lectureId
+      WHERE n.content LIKE ?
+      LIMIT 15
+    `)
+    .all(q) as { id: string; lectureId: string; content: string; lectureTitle: string; seriesId: string | null }[];
+
+  for (const n of noteRows) {
+    // Extract plain text snippet from note content JSON
+    let text = n.content;
+    try {
+      const parsed = JSON.parse(n.content);
+      text = JSON.stringify(parsed);
+    } catch {
+      // keep as is
+    }
+    // Clean JSON quotes
+    const clean = text.replace(/[{}"\\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+    results.push({
+      type: 'note',
+      id: n.id,
+      title: `Note in "${n.lectureTitle}"`,
+      snippet: clean.length > 120 ? clean.slice(0, 120) + '...' : clean,
+      lectureId: n.lectureId,
+      seriesId: n.seriesId ?? undefined,
+    });
+  }
+
+  return results;
 }

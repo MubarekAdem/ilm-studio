@@ -20,6 +20,10 @@ interface AppState {
   lectures: Lecture[];
   lecturesList: Lecture[];
 
+  // Global Modals
+  isSearchOpen: boolean;
+  isQuranOpen: boolean;
+
   // Loading
   isLoadingSeries: boolean;
   isLoadingLectures: boolean;
@@ -30,6 +34,8 @@ interface AppState {
   selectLecture: (lectureId: string | null) => void;
   setCurrentPdfPage: (page: number) => void;
   jumpToPdfPage: (page: number) => void;
+  setSearchOpen: (open: boolean) => void;
+  setQuranOpen: (open: boolean) => void;
   loadSeries: () => Promise<void>;
   loadLectures: (seriesId: string) => Promise<void>;
 }
@@ -44,6 +50,8 @@ export const useAppStore = create<AppState>((set) => ({
   seriesList: [],
   lectures: [],
   lecturesList: [],
+  isSearchOpen: false,
+  isQuranOpen: false,
   isLoadingSeries: false,
   isLoadingLectures: false,
 
@@ -58,6 +66,10 @@ export const useAppStore = create<AppState>((set) => ({
   setCurrentPdfPage: (page) => set({ currentPdfPage: page }),
 
   jumpToPdfPage: (page) => set({ targetPdfPage: page }),
+
+  setSearchOpen: (open) => set({ isSearchOpen: open }),
+
+  setQuranOpen: (open) => set({ isQuranOpen: open }),
 
   loadSeries: async () => {
     set({ isLoadingSeries: true });
