@@ -10,27 +10,49 @@ import {
   Tooltip,
   useColorModeValue,
   useToast,
+  Badge,
 } from '@chakra-ui/react';
 import {
   FiBold,
   FiItalic,
   FiList,
   FiSave,
+  FiClock,
+  FiFileText,
+  FiAlignRight,
+  FiAlignLeft,
 } from 'react-icons/fi';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useAppStore } from '../../stores/appStore';
+import { usePlayerStore } from '../../stores/playerStore';
 
 interface NoteEditorProps {
   lectureId: string | null;
 }
 
+/** Format seconds to mm:ss */
+function formatTime(seconds: number): string {
+  if (!seconds || !isFinite(seconds)) return '0:00';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
   const [noteId, setNoteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isRTL, setIsRTL] = useState(false);
   const toast = useToast();
 
   const lecturesList = useAppStore((s) => s.lecturesList);
+  const currentPdfPage = useAppStore((s) => s.currentPdfPage);
+  const jumpToPdfPage = useAppStore((s) => s.jumpToPdfPage);
+
+  const currentTime = usePlayerStore((s) => s.currentTime);
+  const seek = usePlayerStore((s) => s.seek);
+  const play = usePlayerStore((s) => s.play);
+
   const lecture = lecturesList.find((l) => l.id === lectureId) ?? null;
 
   const surfaceBg = useColorModeValue('white', '#16213e');
@@ -44,7 +66,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
       attributes: {
         class: 'tiptap-editor',
         style:
-          'outline: none; min-height: 300px; padding: 16px; font-size: 14px; line-height: 1.7;',
+          'outline: none; min-height: 350px; padding: 16px; font-size: 15px; line-height: 1.8;',
       },
     },
   });
@@ -70,7 +92,6 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
             const parsed = JSON.parse(note.content);
             editor.commands.setContent(parsed);
           } catch {
-            // If content is plain text, set as paragraph
             editor.commands.setContent(note.content || '');
           }
         } else {
@@ -102,8 +123,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
         const created = await window.api.createNote({
           lectureId,
           content,
-          audioTimestamp: null,
-          pdfPage: null,
+          audioTimestamp: Math.round(currentTime),
+          pdfPage: currentPdfPage,
         });
         if (created?.id) setNoteId(created.id);
       }
@@ -127,16 +148,68 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
     } finally {
       setSaving(false);
     }
-  }, [lectureId, editor, noteId, toast]);
+  }, [lectureId, editor, noteId, currentTime, currentPdfPage, toast]);
+
+  // Insert current audio timestamp chip
+  const handleInsertTimestamp = () => {
+    if (!editor) return;
+    const timeFormatted = formatTime(currentTime);
+    const html = `<button class="timestamp-chip" data-timestamp="${currentTime.toFixed(1)}" style="background: rgba(45, 106, 79, 0.3); border: 1px solid #4db37f; color: #6dc295; padding: 2px 7px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; margin: 0 4px; display: inline-flex; align-items: center; gap: 3px;">⏱️ ${timeFormatted}</button>&nbsp;`;
+    editor.chain().focus().insertContent(html).run();
+  };
+
+  // Insert current PDF page chip
+  const handleInsertPage = () => {
+    if (!editor) return;
+    const html = `<button class="page-chip" data-page="${currentPdfPage}" style="background: rgba(212, 168, 67, 0.3); border: 1px solid #d4a843; color: #e6c85c; padding: 2px 7px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; margin: 0 4px; display: inline-flex; align-items: center; gap: 3px;">📄 p. ${currentPdfPage}</button>&nbsp;`;
+    editor.chain().focus().insertContent(html).run();
+  };
+
+  // Handle click on timestamp or page chips
+  const handleEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = (e.target as HTMLElement).closest('[data-timestamp], [data-page]');
+    if (!target) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const timestampAttr = target.getAttribute('data-timestamp');
+    if (timestampAttr) {
+      const ts = parseFloat(timestampAttr);
+      seek(ts);
+      play();
+      toast({
+        title: `Jumped to ${formatTime(ts)}`,
+        status: 'info',
+        duration: 1000,
+        isClosable: true,
+        position: 'bottom',
+      });
+      return;
+    }
+
+    const pageAttr = target.getAttribute('data-page');
+    if (pageAttr) {
+      const pageNum = parseInt(pageAttr, 10);
+      jumpToPdfPage(pageNum);
+      toast({
+        title: `Jumped to PDF page ${pageNum}`,
+        status: 'info',
+        duration: 1000,
+        isClosable: true,
+        position: 'bottom',
+      });
+    }
+  };
 
   if (!lectureId) {
     return (
       <VStack h="100%" align="center" justify="center" p={8} spacing={3}>
-        <Text color="gray.500" fontSize="lg">
+        <Text color="gray.500" fontSize="3xl">
           📝
         </Text>
-        <Text color="gray.500" textAlign="center">
-          Select a lecture to start taking notes
+        <Text color="gray.400" fontSize="sm" textAlign="center">
+          Select a lecture from the sidebar to view or write study notes.
         </Text>
       </VStack>
     );
@@ -145,14 +218,19 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
   return (
     <VStack h="100%" spacing={0} align="stretch">
       {/* Header */}
-      <HStack px={4} py={3} justify="space-between" flexShrink={0}>
-        <Box>
+      <HStack px={4} py={3} justify="space-between" flexShrink={0} bg={surfaceBg}>
+        <Box flex={1} minW={0} mr={2}>
           <Text fontSize="sm" fontWeight="bold" noOfLines={1}>
             {lecture?.title ?? 'Lecture Notes'}
           </Text>
-          <Text fontSize="xs" color="gray.500">
-            Notes
-          </Text>
+          <HStack spacing={2} mt={0.5}>
+            <Badge colorScheme="green" fontSize="2xs" borderRadius="md">
+              Notes
+            </Badge>
+            <Text fontSize="2xs" color="gray.400">
+              Synced with audio & PDF
+            </Text>
+          </HStack>
         </Box>
         <Button
           size="sm"
@@ -167,7 +245,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
 
       <Divider borderColor={borderColor} />
 
-      {/* Toolbar */}
+      {/* Formatting & Sync Toolbar */}
       <HStack
         px={3}
         py={1.5}
@@ -176,6 +254,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
         borderColor={borderColor}
         spacing={1}
         flexShrink={0}
+        wrap="wrap"
       >
         <Tooltip label="Bold (Ctrl+B)">
           <IconButton
@@ -209,8 +288,6 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
           />
         </Tooltip>
 
-        <Box w="1px" h="20px" bg={borderColor} mx={1} />
-
         <Tooltip label="Bullet List">
           <IconButton
             aria-label="Bullet List"
@@ -223,32 +300,63 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
           />
         </Tooltip>
 
-        <Tooltip label="Ordered List">
+        <Box w="1px" h="18px" bg={borderColor} mx={1} />
+
+        {/* Sync insertion tools */}
+        <Tooltip label="Insert Clickable Timestamp at current audio position">
+          <Button
+            size="xs"
+            colorScheme="green"
+            variant="outline"
+            leftIcon={<FiClock />}
+            onClick={handleInsertTimestamp}
+          >
+            {formatTime(currentTime)}
+          </Button>
+        </Tooltip>
+
+        <Tooltip label={`Insert Clickable Link to PDF Page ${currentPdfPage}`}>
+          <Button
+            size="xs"
+            colorScheme="yellow"
+            variant="outline"
+            leftIcon={<FiFileText />}
+            onClick={handleInsertPage}
+          >
+            Page {currentPdfPage}
+          </Button>
+        </Tooltip>
+
+        <Box w="1px" h="18px" bg={borderColor} mx={1} />
+
+        {/* RTL / LTR Toggle */}
+        <Tooltip label={isRTL ? 'Switch to Left-to-Right (English)' : 'Switch to Right-to-Left (Arabic)'}>
           <IconButton
-            aria-label="Ordered List"
-            icon={<Text fontSize="sm" fontWeight="bold">1.</Text>}
+            aria-label="Toggle text direction"
+            icon={isRTL ? <FiAlignLeft /> : <FiAlignRight />}
             size="sm"
-            variant={editor?.isActive('orderedList') ? 'solid' : 'ghost'}
-            onClick={() =>
-              editor?.chain().focus().toggleOrderedList().run()
-            }
+            variant="ghost"
+            onClick={() => setIsRTL((v) => !v)}
           />
         </Tooltip>
       </HStack>
 
-      {/* Editor content */}
+      {/* Editor Content Area */}
       <Box
         flex={1}
         overflow="auto"
         bg={surfaceBg}
+        dir={isRTL ? 'rtl' : 'ltr'}
+        onClick={handleEditorClick}
         css={{
           '.tiptap-editor': {
             minHeight: '100%',
+            fontFamily: isRTL ? "'Amiri', serif" : 'inherit',
           },
           '.tiptap-editor p.is-editor-empty:first-child::before': {
-            content: '"Start taking notes..."',
+            content: '"Type lecture notes here... Click timestamp/page buttons to link moments in audio and text."',
             color: 'var(--chakra-colors-gray-500)',
-            float: 'left',
+            float: isRTL ? 'right' : 'left',
             height: 0,
             pointerEvents: 'none',
           },

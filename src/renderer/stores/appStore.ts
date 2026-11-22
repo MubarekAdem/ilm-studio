@@ -11,6 +11,10 @@ interface AppState {
   selectedSeriesId: string | null;
   selectedLectureId: string | null;
 
+  // PDF navigation
+  currentPdfPage: number;
+  targetPdfPage: number | null;
+
   // Data
   seriesList: Series[];
   lectures: Lecture[];
@@ -24,6 +28,8 @@ interface AppState {
   setView: (view: AppView) => void;
   selectSeries: (seriesId: string | null) => void;
   selectLecture: (lectureId: string | null) => void;
+  setCurrentPdfPage: (page: number) => void;
+  jumpToPdfPage: (page: number) => void;
   loadSeries: () => Promise<void>;
   loadLectures: (seriesId: string) => Promise<void>;
 }
@@ -33,6 +39,8 @@ export const useAppStore = create<AppState>((set) => ({
   currentView: 'library',
   selectedSeriesId: null,
   selectedLectureId: null,
+  currentPdfPage: 1,
+  targetPdfPage: null,
   seriesList: [],
   lectures: [],
   lecturesList: [],
@@ -46,6 +54,10 @@ export const useAppStore = create<AppState>((set) => ({
     set({ selectedSeriesId: seriesId, selectedLectureId: null, lectures: [], lecturesList: [] }),
 
   selectLecture: (lectureId) => set({ selectedLectureId: lectureId }),
+
+  setCurrentPdfPage: (page) => set({ currentPdfPage: page }),
+
+  jumpToPdfPage: (page) => set({ targetPdfPage: page }),
 
   loadSeries: async () => {
     set({ isLoadingSeries: true });

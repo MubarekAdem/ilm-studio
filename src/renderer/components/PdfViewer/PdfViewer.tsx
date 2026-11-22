@@ -21,6 +21,7 @@ import {
 } from 'react-icons/fi';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/build/pdf.worker.entry';
+import { useAppStore } from '../../stores/appStore';
 
 interface PdfViewerProps {
   pdfPath: string | null;
@@ -32,10 +33,14 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [scale, setScale] = useState(1.0);
+  const [scale, setScale] = useState(1.2);
   const [pageInput, setPageInput] = useState('1');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const setCurrentPdfPage = useAppStore((s) => s.setCurrentPdfPage);
+  const targetPdfPage = useAppStore((s) => s.targetPdfPage);
+  const jumpToPdfPage = useAppStore((s) => s.jumpToPdfPage);
 
   const placeholderColor = useColorModeValue('gray.400', 'gray.500');
   const toolbarBg = useColorModeValue('gray.100', '#16213e');
@@ -46,6 +51,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
       setPdfDoc(null);
       setTotalPages(0);
       setCurrentPage(1);
+      setCurrentPdfPage(1);
       return;
     }
 
@@ -61,10 +67,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
           setTotalPages(doc.numPages);
           setCurrentPage(1);
           setPageInput('1');
+          setCurrentPdfPage(1);
         }
       } catch (err) {
         if (!cancelled) {
-          setError('Failed to load PDF');
+          setError('Failed to load PDF file');
           console.error('PDF load error:', err);
         }
       } finally {
@@ -76,7 +83,17 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
     return () => {
       cancelled = true;
     };
-  }, [pdfPath]);
+  }, [pdfPath, setCurrentPdfPage]);
+
+  // Handle external jump request (e.g. from clicking page chip in notes)
+  useEffect(() => {
+    if (targetPdfPage !== null && targetPdfPage >= 1 && targetPdfPage <= totalPages) {
+      setCurrentPage(targetPdfPage);
+      setPageInput(String(targetPdfPage));
+      setCurrentPdfPage(targetPdfPage);
+      jumpToPdfPage(null as any); // Reset target
+    }
+  }, [targetPdfPage, totalPages, setCurrentPdfPage, jumpToPdfPage]);
 
   // Render current page
   const renderPage = useCallback(async () => {
@@ -110,10 +127,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
     if (!pdfDoc || !containerRef.current) return;
 
     pdfDoc.getPage(currentPage).then((page) => {
-      const containerWidth = containerRef.current!.clientWidth - 32; // padding
+      const containerWidth = containerRef.current!.clientWidth - 32;
       const viewport = page.getViewport({ scale: 1.0 });
       const newScale = containerWidth / viewport.width;
-      setScale(newScale);
+      setScale(Math.max(0.5, newScale));
     });
   }, [pdfDoc, currentPage]);
 
@@ -121,6 +138,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
     const p = Math.max(1, Math.min(page, totalPages));
     setCurrentPage(p);
     setPageInput(String(p));
+    setCurrentPdfPage(p);
   };
 
   const handlePageInputKeyDown = (e: React.KeyboardEvent) => {
@@ -142,11 +160,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         p={8}
       >
         <Icon as={FiFileText} boxSize={16} color={placeholderColor} />
-        <Text color={placeholderColor} fontSize="lg">
-          No PDF loaded
+        <Text color={placeholderColor} fontSize="lg" fontWeight="medium">
+          No PDF Attached
         </Text>
-        <Text color={placeholderColor} fontSize="sm">
-          Select a lecture with an attached PDF to view it here.
+        <Text color={placeholderColor} fontSize="sm" textAlign="center" maxW="300px">
+          Import a textbook or matn PDF via the import button to study alongside the lecture audio.
         </Text>
       </Flex>
     );
@@ -223,11 +241,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
             icon={<FiZoomOut />}
             size="sm"
             variant="ghost"
-            onClick={() => setScale((s) => Math.max(0.25, s - 0.25))}
+            onClick={() => setScale((s) => Math.max(0.3, s - 0.2))}
           />
         </Tooltip>
 
-        <Text fontSize="sm" color="gray.400" minW="45px" textAlign="center">
+        <Text fontSize="xs" color="gray.400" minW="45px" textAlign="center">
           {Math.round(scale * 100)}%
         </Text>
 
@@ -237,7 +255,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
             icon={<FiZoomIn />}
             size="sm"
             variant="ghost"
-            onClick={() => setScale((s) => Math.min(5.0, s + 0.25))}
+            onClick={() => setScale((s) => Math.min(4.0, s + 0.2))}
           />
         </Tooltip>
 
@@ -252,7 +270,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         </Tooltip>
       </HStack>
 
-      {/* Canvas area */}
+      {/* Canvas scroll area */}
       <Box
         ref={containerRef}
         flex={1}
@@ -270,10 +288,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({ pdfPath }) => {
       >
         {loading ? (
           <Text color="gray.400" alignSelf="center">
-            Loading PDF…
+            Rendering PDF page...
           </Text>
         ) : (
-          <canvas ref={canvasRef} style={{ maxWidth: '100%' }} />
+          <canvas ref={canvasRef} style={{ maxWidth: '100%', borderRadius: '4px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }} />
         )}
       </Box>
     </VStack>
