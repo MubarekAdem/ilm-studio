@@ -7,11 +7,15 @@ import type {
   Bookmark,
   Chapter,
   StudySession,
+  ReviewSchedule,
   AppSettings,
   StudyStats,
   Surah,
   Ayah,
   LibrarySearchResult,
+  DailyStudyBreakdown,
+  DueReviewItem,
+  SeriesPacingInfo,
   ImportAudioOptions,
   ImportPdfOptions,
   OpenDialogOptions,
@@ -83,6 +87,14 @@ const api = {
     ipcRenderer.invoke(IPC_CHANNELS.DB_GET_STATS),
   searchLibrary: (query: string): Promise<LibrarySearchResult[]> =>
     ipcRenderer.invoke(IPC_CHANNELS.DB_SEARCH_LIBRARY, query),
+  getDueReviews: (): Promise<DueReviewItem[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_GET_DUE_REVIEWS),
+  updateReviewSchedule: (lectureId: string, rating: 'hard' | 'good' | 'easy'): Promise<ReviewSchedule> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_UPDATE_REVIEW_SCHEDULE, lectureId, rating),
+  getWeeklyBreakdown: (): Promise<DailyStudyBreakdown[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_GET_WEEKLY_BREAKDOWN),
+  getSeriesPacing: (): Promise<SeriesPacingInfo[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_GET_SERIES_PACING),
 
   // ── Quran ────────────────────────────────────────────────────────────
   getSurahs: (): Promise<Surah[]> =>

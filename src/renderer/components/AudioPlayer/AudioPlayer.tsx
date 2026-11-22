@@ -75,6 +75,8 @@ export const AudioPlayer: React.FC = () => {
   const howlRef = useRef<Howl | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastSaveTimeRef = useRef<number>(0);
+  const accumulatedActiveSecondsRef = useRef<number>(0);
+  const lastTickTimeRef = useRef<number>(0);
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const toast = useToast();
@@ -141,10 +143,31 @@ export const AudioPlayer: React.FC = () => {
     return () => clearInterval(interval);
   }, [sleepTimerRemaining, pause, toast]);
 
+  // Flush accumulated active listening time to SQLite study_sessions
+  const flushStudySession = useCallback(() => {
+    if (!currentLecture || accumulatedActiveSecondsRef.current < 3) return;
+    const durToLog = Math.round(accumulatedActiveSecondsRef.current);
+    accumulatedActiveSecondsRef.current = 0;
+    const endIso = new Date().toISOString();
+    const startIso = new Date(Date.now() - durToLog * 1000).toISOString();
+    window.api
+      .logSession({
+        lectureId: currentLecture.id,
+        startTime: startIso,
+        endTime: endIso,
+        duration: durToLog,
+      })
+      .catch(console.error);
+  }, [currentLecture]);
+
   // Handle auto-advance when lecture finishes
   const handleLectureEnd = useCallback(() => {
     pause();
     if (!currentLecture) return;
+
+    flushStudySession();
+    // Schedule for spaced repetition review
+    window.api.updateReviewSchedule(currentLecture.id, 'good').catch(console.error);
 
     window.api.updateLecture(currentLecture.id, {
       completionPct: 100,
@@ -215,6 +238,7 @@ export const AudioPlayer: React.FC = () => {
     howlRef.current = howl;
 
     return () => {
+      flushStudySession();
       howl.unload();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -249,6 +273,21 @@ export const AudioPlayer: React.FC = () => {
     if (howl && howl.playing()) {
       const pos = howl.seek() as number;
 
+      // Track active listening seconds
+      const now = Date.now();
+      if (lastTickTimeRef.current > 0) {
+        const delta = (now - lastTickTimeRef.current) / 1000;
+        if (delta > 0 && delta < 2) {
+          accumulatedActiveSecondsRef.current += delta;
+        }
+      }
+      lastTickTimeRef.current = now;
+
+      // Flush session log to SQLite every 20 seconds of continuous listening
+      if (accumulatedActiveSecondsRef.current >= 20) {
+        flushStudySession();
+      }
+
       // A-B Loop boundary check
       const { loopA, loopB, isLooping } = usePlayerStore.getState();
       if (isLooping && loopA !== null && loopB !== null && loopB > loopA) {
@@ -263,7 +302,6 @@ export const AudioPlayer: React.FC = () => {
       usePlayerStore.getState().setCurrentTime(pos);
 
       // Save position to SQLite every 5 seconds
-      const now = Date.now();
       if (now - lastSaveTimeRef.current > 5000 && currentLecture) {
         lastSaveTimeRef.current = now;
         const dur = howl.duration();
@@ -274,14 +312,18 @@ export const AudioPlayer: React.FC = () => {
           completionPct: pct,
         }).catch(console.error);
       }
+    } else {
+      lastTickTimeRef.current = 0;
     }
     rafRef.current = requestAnimationFrame(updateProgress);
-  }, [currentLecture]);
+  }, [currentLecture, flushStudySession]);
 
   const handlePlayPause = () => {
     if (!currentLecture) return;
     if (isPlaying) {
       pause();
+      flushStudySession();
+      lastTickTimeRef.current = 0;
       if (howlRef.current) {
         const pos = howlRef.current.seek() as number;
         const dur = howlRef.current.duration();
@@ -292,6 +334,7 @@ export const AudioPlayer: React.FC = () => {
         }).catch(console.error);
       }
     } else {
+      lastTickTimeRef.current = Date.now();
       play();
     }
   };

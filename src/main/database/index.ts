@@ -15,6 +15,9 @@ import type {
   AppSettings,
   StudyStats,
   LibrarySearchResult,
+  DailyStudyBreakdown,
+  DueReviewItem,
+  SeriesPacingInfo,
 } from '../../shared/types';
 
 let db: Database.Database;
@@ -466,6 +469,7 @@ export function getStats(): StudyStats {
     todayMinutes: Math.round(todaySeconds / 60),
     weekMinutes: Math.round(weekSeconds / 60),
     recentSessions,
+    weeklyBreakdown: getWeeklyBreakdown(),
   };
 }
 
@@ -544,4 +548,119 @@ export function searchLibrary(query: string): LibrarySearchResult[] {
   }
 
   return results;
+}
+
+// ── Analytics & Spaced Repetition ────────────────────────────────────────
+
+export function getWeeklyBreakdown(): DailyStudyBreakdown[] {
+  const days: DailyStudyBreakdown[] = [];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Past 7 days (ending today)
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const dayLabel = dayNames[d.getDay()];
+
+    const row = db
+      .prepare('SELECT COALESCE(SUM(duration), 0) as sec FROM study_sessions WHERE date(startTime) = ?')
+      .get(dateStr) as { sec: number };
+
+    days.push({
+      date: dateStr,
+      dayLabel,
+      minutes: Math.round((row?.sec || 0) / 60),
+    });
+  }
+
+  return days;
+}
+
+export function getDueReviews(): DueReviewItem[] {
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = db
+    .prepare(
+      `SELECT r.id, r.lectureId, r.nextReviewDate, r.intervalDays,
+              l.title as lectureTitle,
+              COALESCE(s.title, 'General Study') as seriesTitle
+       FROM review_schedule r
+       JOIN lectures l ON l.id = r.lectureId
+       LEFT JOIN series s ON s.id = l.seriesId
+       ORDER BY r.nextReviewDate ASC`
+    )
+    .all() as any[];
+
+  return rows.map((r) => ({
+    ...r,
+    isDue: r.nextReviewDate <= today,
+  }));
+}
+
+export function updateReviewScheduleRating(
+  lectureId: string,
+  rating: 'hard' | 'good' | 'easy'
+): ReviewSchedule {
+  const existing = getReviewSchedule(lectureId);
+  let nextInterval = 1;
+  if (existing) {
+    if (rating === 'hard') {
+      nextInterval = 1;
+    } else if (rating === 'good') {
+      nextInterval = Math.max(3, Math.round(existing.intervalDays * 2));
+    } else {
+      nextInterval = Math.max(7, Math.round(existing.intervalDays * 3));
+    }
+  } else {
+    nextInterval = rating === 'hard' ? 1 : rating === 'good' ? 3 : 7;
+  }
+
+  const nextDate = new Date();
+  nextDate.setDate(nextDate.getDate() + nextInterval);
+  const nextReviewDate = nextDate.toISOString().slice(0, 10);
+
+  return upsertReviewSchedule({
+    lectureId,
+    nextReviewDate,
+    intervalDays: nextInterval,
+  });
+}
+
+export function getSeriesPacing(): SeriesPacingInfo[] {
+  const series = db.prepare('SELECT * FROM series ORDER BY title ASC').all() as Series[];
+  const result: SeriesPacingInfo[] = [];
+
+  for (const s of series) {
+    const lecs = db
+      .prepare(
+        'SELECT id, title, audioPath, pdfPath, completionPct FROM lectures WHERE seriesId = ? ORDER BY orderIndex ASC, title ASC'
+      )
+      .all(s.id) as Lecture[];
+
+    const total = lecs.length;
+    const completed = lecs.filter((l) => l.completionPct >= 90).length;
+    const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const next = lecs.find((l) => l.completionPct < 90);
+
+    result.push({
+      seriesId: s.id,
+      title: s.title,
+      scholar: s.scholar || 'Unknown Scholar',
+      topic: s.topic || 'General Studies',
+      totalLectures: total,
+      completedLectures: completed,
+      completionPct: pct,
+      targetPerWeek: 2,
+      nextLecture: next
+        ? {
+            id: next.id,
+            title: next.title,
+            audioPath: next.audioPath,
+            pdfPath: next.pdfPath,
+          }
+        : undefined,
+    });
+  }
+
+  return result;
 }

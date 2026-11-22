@@ -147,6 +147,10 @@ export const IPC_CHANNELS = {
   DB_UPDATE_SETTING: 'db:update-setting',
   DB_GET_STATS: 'db:get-stats',
   DB_SEARCH_LIBRARY: 'db:search-library',
+  DB_GET_DUE_REVIEWS: 'db:get-due-reviews',
+  DB_UPDATE_REVIEW_SCHEDULE: 'db:update-review-schedule',
+  DB_GET_WEEKLY_BREAKDOWN: 'db:get-weekly-breakdown',
+  DB_GET_SERIES_PACING: 'db:get-series-pacing',
 
   // Quran
   QURAN_GET_SURAHS: 'quran:get-surahs',
@@ -163,6 +167,39 @@ export const IPC_CHANNELS = {
   APP_GET_DATA_PATH: 'app:get-data-path',
 } as const;
 
+export interface DailyStudyBreakdown {
+  date: string;
+  dayLabel: string;
+  minutes: number;
+}
+
+export interface DueReviewItem {
+  id: string;
+  lectureId: string;
+  lectureTitle: string;
+  seriesTitle?: string;
+  nextReviewDate: string;
+  intervalDays: number;
+  isDue: boolean;
+}
+
+export interface SeriesPacingInfo {
+  seriesId: string;
+  title: string;
+  scholar: string;
+  topic: string;
+  totalLectures: number;
+  completedLectures: number;
+  completionPct: number;
+  targetPerWeek: number;
+  nextLecture?: {
+    id: string;
+    title: string;
+    audioPath: string | null;
+    pdfPath: string | null;
+  };
+}
+
 // Stats for dashboard
 export interface StudyStats {
   totalSeries: number;
@@ -174,6 +211,7 @@ export interface StudyStats {
   todayMinutes: number;
   weekMinutes: number;
   recentSessions: StudySession[];
+  weeklyBreakdown?: DailyStudyBreakdown[];
 }
 
 export interface ImportAudioOptions {

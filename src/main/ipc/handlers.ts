@@ -135,6 +135,25 @@ export function registerIpcHandlers(): void {
     return database.searchLibrary(query);
   });
 
+  ipcMain.handle(IPC_CHANNELS.DB_GET_DUE_REVIEWS, () => {
+    return database.getDueReviews();
+  });
+
+  ipcMain.handle(
+    IPC_CHANNELS.DB_UPDATE_REVIEW_SCHEDULE,
+    (_event, lectureId: string, rating: 'hard' | 'good' | 'easy') => {
+      return database.updateReviewScheduleRating(lectureId, rating);
+    }
+  );
+
+  ipcMain.handle(IPC_CHANNELS.DB_GET_WEEKLY_BREAKDOWN, () => {
+    return database.getWeeklyBreakdown();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_GET_SERIES_PACING, () => {
+    return database.getSeriesPacing();
+  });
+
   // ── Quran ────────────────────────────────────────────────────────────
 
   ipcMain.handle(IPC_CHANNELS.QURAN_GET_SURAHS, () => {

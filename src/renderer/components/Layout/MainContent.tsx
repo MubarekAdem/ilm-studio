@@ -27,6 +27,7 @@ import { useAppStore } from '../../stores/appStore';
 import { usePlayerStore } from '../../stores/playerStore';
 import PdfViewer from '../PdfViewer/PdfViewer';
 import NoteEditor from '../NoteEditor/NoteEditor';
+import Dashboard from '../Dashboard/Dashboard';
 
 /** Quick stat card for the library welcome screen */
 const StatCard: React.FC<{
@@ -204,21 +205,6 @@ const StudyView: React.FC = () => {
   );
 };
 
-/** Dashboard placeholder */
-const DashboardView: React.FC = () => {
-  return (
-    <VStack align="center" justify="center" h="100%" spacing={4} p={8}>
-      <Icon as={FiBarChart2} boxSize={16} color="green.400" />
-      <Heading size="md" color="gray.300">
-        Study Analytics & Dashboard
-      </Heading>
-      <Text color="gray.400" textAlign="center" maxW="450px" fontSize="sm">
-        Track study streaks, daily learning targets, and spaced repetition review schedules in Phase 5.
-      </Text>
-    </VStack>
-  );
-};
-
 export const MainContent: React.FC = () => {
   const currentView = useAppStore((s) => s.currentView);
   const bg = useColorModeValue('#faf8f5', '#1a1a2e');
@@ -227,7 +213,7 @@ export const MainContent: React.FC = () => {
     <Box flex={1} h="100%" bg={bg} overflow="hidden">
       {currentView === 'library' && <LibraryView />}
       {currentView === 'study' && <StudyView />}
-      {currentView === 'dashboard' && <DashboardView />}
+      {currentView === 'dashboard' && <Dashboard />}
     </Box>
   );
 };
