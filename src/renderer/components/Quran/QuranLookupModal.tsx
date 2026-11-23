@@ -44,9 +44,9 @@ export const QuranLookupModal: React.FC<QuranLookupModalProps> = ({
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
-  const modalBg = useColorModeValue('white', '#16213e');
-  const cardBg = useColorModeValue('gray.50', '#0f172a');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const modalBg = useColorModeValue('#ffffff', '#181818');
+  const cardBg = useColorModeValue('#f7f7f7', '#222222');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   // Load surah list on open
   useEffect(() => {

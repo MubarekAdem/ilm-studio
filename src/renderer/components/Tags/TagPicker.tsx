@@ -41,9 +41,9 @@ export const TagPicker: React.FC<TagPickerProps> = ({ noteId }) => {
   const [search, setSearch] = useState('');
   const setTagManagerOpen = useAppStore((s) => s.setTagManagerOpen);
 
-  const popoverBg = useColorModeValue('white', '#16213e');
-  const hoverBg = useColorModeValue('gray.100', 'whiteAlpha.100');
-  const inputBg = useColorModeValue('gray.50', 'whiteAlpha.50');
+  const popoverBg = useColorModeValue('#ffffff', '#1f1f1f');
+  const hoverBg = useColorModeValue('#eeeeee', 'whiteAlpha.100');
+  const inputBg = useColorModeValue('#f7f7f7', 'rgba(255, 255, 255, 0.04)');
 
   const loadData = useCallback(async () => {
     try {

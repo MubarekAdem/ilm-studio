@@ -85,9 +85,9 @@ const SeriesItem: React.FC<SeriesItemProps> = ({
   const lecturesList = useAppStore((s) => s.lecturesList);
   const openImport = useAppStore((s) => s.openImport);
   const play = usePlayerStore((s) => s.play);
-  const hoverBg = useColorModeValue('blackAlpha.100', 'whiteAlpha.100');
-  const emptyBoxBg = useColorModeValue('blackAlpha.50', 'whiteAlpha.50');
-  const emptyBorderColor = useColorModeValue('gray.200', 'whiteAlpha.200');
+  const hoverBg = useColorModeValue('blackAlpha.50', 'whiteAlpha.100');
+  const emptyBoxBg = useColorModeValue('#f7f7f7', '#1a1a1a');
+  const emptyBorderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.12)');
 
   const loadCourseLectures = React.useCallback(async () => {
     try {
@@ -390,8 +390,8 @@ export const Sidebar: React.FC = () => {
     onClose: onNewSeriesClose,
   } = useDisclosure();
 
-  const surfaceBg = useColorModeValue('gray.50', '#16213e');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const surfaceBg = useColorModeValue('#fdfdfd', '#141414');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   const loadStandaloneLectures = React.useCallback(async () => {
     try {
@@ -459,19 +459,19 @@ export const Sidebar: React.FC = () => {
             <Box
               w="32px"
               h="32px"
-              borderRadius="lg"
-              bg="green.600"
+              borderRadius="9px"
+              bg={colorMode === 'dark' ? '#3ecf8e' : '#0e7e4e'}
               display="flex"
               alignItems="center"
               justifyContent="center"
-              boxShadow="md"
+              boxShadow="sm"
             >
-              <Text fontSize="md" fontWeight="bold" color="white">
+              <Text fontSize="md" fontWeight="bold" color={colorMode === 'dark' ? '#030303' : 'white'}>
                 عِ
               </Text>
             </Box>
             <Box>
-              <Heading size="sm" color="green.400" fontWeight="bold" letterSpacing="wide">
+              <Heading size="sm" color={colorMode === 'dark' ? '#3ecf8e' : '#0e7e4e'} fontWeight="bold" letterSpacing="tight">
                 Ilm Studio
               </Heading>
               <Text fontSize="2xs" color="gray.400">

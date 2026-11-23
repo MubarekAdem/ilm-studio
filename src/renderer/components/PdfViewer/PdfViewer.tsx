@@ -79,8 +79,8 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   const toast = useToast();
 
   const placeholderColor = useColorModeValue('gray.400', 'gray.500');
-  const toolbarBg = useColorModeValue('gray.100', '#16213e');
-  const popoverBg = useColorModeValue('white', '#16213e');
+  const toolbarBg = useColorModeValue('#f7f7f7', '#141414');
+  const popoverBg = useColorModeValue('#ffffff', '#1f1f1f');
 
   // Load PDF document when path changes
   useEffect(() => {

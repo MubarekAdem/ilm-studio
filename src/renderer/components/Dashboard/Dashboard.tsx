@@ -52,9 +52,9 @@ export const Dashboard: React.FC = () => {
   const setView = useAppStore((s) => s.setView);
   const play = usePlayerStore((s) => s.play);
 
-  const cardBg = useColorModeValue('white', '#16213e');
-  const cardHoverBg = useColorModeValue('gray.50', '#1c294a');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const cardBg = useColorModeValue('#ffffff', '#181818');
+  const cardHoverBg = useColorModeValue('#f7f7f7', '#222222');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
   const subtleText = useColorModeValue('gray.600', 'gray.400');
 
   const loadDashboardData = useCallback(async () => {

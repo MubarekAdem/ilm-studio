@@ -34,9 +34,9 @@ export const PdfSearchBar: React.FC<PdfSearchBarProps> = ({
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [currentMatchIdx, setCurrentMatchIdx] = useState(0);
 
-  const barBg = useColorModeValue('white', '#16213e');
-  const inputBg = useColorModeValue('gray.50', 'whiteAlpha.50');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const barBg = useColorModeValue('#ffffff', '#181818');
+  const inputBg = useColorModeValue('#f7f7f7', 'rgba(255, 255, 255, 0.04)');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   useEffect(() => {
     if (!isOpen) {

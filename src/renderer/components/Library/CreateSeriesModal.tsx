@@ -39,8 +39,8 @@ export const CreateSeriesModal: React.FC<CreateSeriesModalProps> = ({ isOpen, on
   const loadSeries = useAppStore((s) => s.loadSeries);
   const toast = useToast();
 
-  const modalBg = useColorModeValue('white', '#16213e');
-  const inputBg = useColorModeValue('gray.50', 'whiteAlpha.50');
+  const modalBg = useColorModeValue('#ffffff', '#181818');
+  const inputBg = useColorModeValue('#f7f7f7', 'rgba(255, 255, 255, 0.04)');
 
   const isEdit = Boolean(series);
 

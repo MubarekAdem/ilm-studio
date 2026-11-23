@@ -69,9 +69,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
 
   const lecture = lecturesList.find((l) => l.id === lectureId) ?? null;
 
-  const surfaceBg = useColorModeValue('white', '#16213e');
-  const toolbarBg = useColorModeValue('gray.50', '#0f1a2e');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const surfaceBg = useColorModeValue('#ffffff', '#181818');
+  const toolbarBg = useColorModeValue('#f7f7f7', '#141414');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   const editor = useEditor({
     extensions: [StarterKit],

@@ -38,14 +38,14 @@ const StatCard: React.FC<{
   value: string | number;
   icon: React.ElementType;
 }> = ({ label, value, icon }) => {
-  const cardBg = useColorModeValue('white', '#16213e');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const cardBg = useColorModeValue('#ffffff', '#181818');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   return (
     <Box
       bg={cardBg}
       p={4}
-      borderRadius="lg"
+      borderRadius="11px"
       boxShadow="sm"
       border="1px solid"
       borderColor={borderColor}
@@ -92,8 +92,8 @@ const LibraryView: React.FC = () => {
     }).catch(console.error);
   }, []);
 
-  const cardBg = useColorModeValue('white', '#16213e');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const cardBg = useColorModeValue('#ffffff', '#181818');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   return (
     <VStack align="stretch" spacing={6} p={8} maxW="1000px" mx="auto" overflowY="auto" h="100%">
@@ -138,12 +138,13 @@ const LibraryView: React.FC = () => {
               key={series.id}
               p={5}
               bg={cardBg}
-              borderRadius="lg"
+              borderRadius="11px"
               border="1px solid"
               borderColor={borderColor}
               boxShadow="sm"
               cursor="pointer"
-              _hover={{ transform: 'translateY(-2px)', borderColor: 'green.400', transition: 'all 0.2s' }}
+              transition="all 0.15s ease"
+              _hover={{ transform: 'translateY(-2px)', borderColor: 'brand.500', boxShadow: 'md' }}
               onClick={() => {
                 selectSeries(series.id);
                 setView('study');
@@ -255,10 +256,10 @@ const StudyView: React.FC = () => {
       } catch {}
     }
   }, [effectivePdfPath]);
-  const splitterBg = useColorModeValue('gray.200', 'whiteAlpha.100');
-  const splitterHoverBg = useColorModeValue('green.400', 'green.500');
-  const emptyCardBg = useColorModeValue('white', '#16213e');
-  const emptyBorderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const splitterBg = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
+  const splitterHoverBg = useColorModeValue('#0e7e4e', '#3ecf8e');
+  const emptyCardBg = useColorModeValue('#ffffff', '#181818');
+  const emptyBorderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -385,7 +386,7 @@ const StudyView: React.FC = () => {
 
 export const MainContent: React.FC = () => {
   const currentView = useAppStore((s) => s.currentView);
-  const bg = useColorModeValue('#faf8f5', '#1a1a2e');
+  const bg = useColorModeValue('#fdfdfd', '#121212');
 
   return (
     <Box flex={1} h="100%" bg={bg} overflow="hidden">

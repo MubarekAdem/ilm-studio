@@ -120,9 +120,9 @@ export const AudioPlayer: React.FC = () => {
   const lecturesList = useAppStore((s) => s.lecturesList);
   const selectLecture = useAppStore((s) => s.selectLecture);
 
-  const barBg = useColorModeValue('gray.100', '#0f172a');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-  const popoverBg = useColorModeValue('white', '#16213e');
+  const barBg = useColorModeValue('#f7f7f7', '#141414');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
+  const popoverBg = useColorModeValue('#ffffff', '#1f1f1f');
   const itemHoverBg = useColorModeValue('blackAlpha.50', 'whiteAlpha.100');
 
   // Helper to get underlying HTMLAudioElement for Web Audio EQ

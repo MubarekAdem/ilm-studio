@@ -97,7 +97,7 @@ export const PdfOutlineDrawer: React.FC<PdfOutlineDrawerProps> = ({
   onSelectPage,
   currentPage,
 }) => {
-  const drawerBg = useColorModeValue('white', '#16213e');
+  const drawerBg = useColorModeValue('#ffffff', '#181818');
 
   return (
     <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="sm">

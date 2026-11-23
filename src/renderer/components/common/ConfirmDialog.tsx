@@ -34,7 +34,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isLoading = false,
 }) => {
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const modalBg = useColorModeValue('white', '#16213e');
+  const modalBg = useColorModeValue('#ffffff', '#181818');
+  const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   return (
     <AlertDialog
@@ -44,8 +45,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       isCentered
       size="md"
     >
-      <AlertDialogOverlay bg="blackAlpha.700">
-        <AlertDialogContent bg={modalBg}>
+      <AlertDialogOverlay bg="blackAlpha.700" backdropFilter="blur(4px)">
+        <AlertDialogContent bg={modalBg} borderRadius="11px" borderWidth="1px" borderColor={borderColor}>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
             {title}
           </AlertDialogHeader>
