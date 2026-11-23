@@ -96,7 +96,7 @@ const LibraryView: React.FC = () => {
   const borderColor = useColorModeValue('#e9e9e9', 'rgba(255, 255, 255, 0.08)');
 
   return (
-    <VStack align="stretch" spacing={6} p={8} maxW="1000px" mx="auto" overflowY="auto" h="100%">
+    <VStack align="stretch" spacing={6} p={8} maxW="1280px" mx="auto" overflowY="auto" h="100%">
       <Box>
         <Text fontSize="sm" color="green.400" fontWeight="bold" letterSpacing="wider">
           بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ

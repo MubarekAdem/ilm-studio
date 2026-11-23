@@ -139,7 +139,7 @@ export const Dashboard: React.FC = () => {
       align="stretch"
       spacing={6}
       p={{ base: 4, md: 8 }}
-      maxW="1100px"
+      maxW="1280px"
       mx="auto"
       h="100%"
       overflowY="auto"
