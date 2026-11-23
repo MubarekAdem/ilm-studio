@@ -1,0 +1,6532 @@
+{
+ "note": "CSS animations are in styles.css (their @keyframes are listed here too). `animations` says which element runs which; `scripted` are element.animate() calls with real keyframes; `players` are videos and Lottie/Rive players with the file they load; `recorded` are what the page's scripts wrote frame by frame while it loaded and was scrolled (one track per element and property, samples are [ms, value, scrollY]: replay them with the same timing); `classChanges` are classes scripts added or removed, with when and at what scroll; `films` are pictures of each moving thing over one cycle (look at them); `states` picture controls at rest, on hover and on focus; `scrollReveals` are elements the page's scripts watch as they scroll into view (their classes are as they ended up: write a small IntersectionObserver that adds the class the stylesheet keys on).",
+ "keyframes": [
+  {
+   "name": "swipe-out-left",
+   "css": "@keyframes swipe-out-left { \n  0% { transform: var(--y) translateX(var(--swipe-amount-x)); opacity: 1; }\n  100% { transform: var(--y) translateX(calc(var(--swipe-amount-x) - 100%)); opacity: 0; }\n}"
+  },
+  {
+   "name": "swipe-out-right",
+   "css": "@keyframes swipe-out-right { \n  0% { transform: var(--y) translateX(var(--swipe-amount-x)); opacity: 1; }\n  100% { transform: var(--y) translateX(calc(var(--swipe-amount-x) + 100%)); opacity: 0; }\n}"
+  },
+  {
+   "name": "swipe-out-up",
+   "css": "@keyframes swipe-out-up { \n  0% { transform: var(--y) translateY(var(--swipe-amount-y)); opacity: 1; }\n  100% { transform: var(--y) translateY(calc(var(--swipe-amount-y) - 100%)); opacity: 0; }\n}"
+  },
+  {
+   "name": "swipe-out-down",
+   "css": "@keyframes swipe-out-down { \n  0% { transform: var(--y) translateY(var(--swipe-amount-y)); opacity: 1; }\n  100% { transform: var(--y) translateY(calc(var(--swipe-amount-y) + 100%)); opacity: 0; }\n}"
+  },
+  {
+   "name": "sonner-fade-in",
+   "css": "@keyframes sonner-fade-in { \n  0% { opacity: 0; transform: scale(0.8); }\n  100% { opacity: 1; transform: scale(1); }\n}"
+  },
+  {
+   "name": "sonner-fade-out",
+   "css": "@keyframes sonner-fade-out { \n  0% { opacity: 1; transform: scale(1); }\n  100% { opacity: 0; transform: scale(0.8); }\n}"
+  },
+  {
+   "name": "sonner-spin",
+   "css": "@keyframes sonner-spin { \n  0% { opacity: 1; }\n  100% { opacity: 0.15; }\n}"
+  },
+  {
+   "name": "fadeIn",
+   "css": "@keyframes fadeIn { \n  0% { opacity: 0; }\n  100% { opacity: 1; }\n}"
+  },
+  {
+   "name": "fadeOut",
+   "css": "@keyframes fadeOut { \n  100% { opacity: 0; }\n}"
+  },
+  {
+   "name": "slideFromBottom",
+   "css": "@keyframes slideFromBottom { \n  0% { transform: translate3d(0,var(--initial-transform,100%),0); }\n  100% { transform: translate3d(0px, 0px, 0px); }\n}"
+  },
+  {
+   "name": "slideToBottom",
+   "css": "@keyframes slideToBottom { \n  100% { transform: translate3d(0,var(--initial-transform,100%),0); }\n}"
+  },
+  {
+   "name": "slideFromTop",
+   "css": "@keyframes slideFromTop { \n  0% { transform: translate3d(0,calc(var(--initial-transform,100%) * -1),0); }\n  100% { transform: translate3d(0px, 0px, 0px); }\n}"
+  },
+  {
+   "name": "slideToTop",
+   "css": "@keyframes slideToTop { \n  100% { transform: translate3d(0,calc(var(--initial-transform,100%) * -1),0); }\n}"
+  },
+  {
+   "name": "slideFromLeft",
+   "css": "@keyframes slideFromLeft { \n  0% { transform: translate3d(calc(var(--initial-transform,100%) * -1),0,0); }\n  100% { transform: translate3d(0px, 0px, 0px); }\n}"
+  },
+  {
+   "name": "slideToLeft",
+   "css": "@keyframes slideToLeft { \n  100% { transform: translate3d(calc(var(--initial-transform,100%) * -1),0,0); }\n}"
+  },
+  {
+   "name": "slideFromRight",
+   "css": "@keyframes slideFromRight { \n  0% { transform: translate3d(var(--initial-transform,100%),0,0); }\n  100% { transform: translate3d(0px, 0px, 0px); }\n}"
+  },
+  {
+   "name": "slideToRight",
+   "css": "@keyframes slideToRight { \n  100% { transform: translate3d(var(--initial-transform,100%),0,0); }\n}"
+  },
+  {
+   "name": "overlayContentShow",
+   "css": "@keyframes overlayContentShow{0%{opacity:0;transform:translateY(-2%)scale(1)}to{opacity:1;transform:translate(0)scale(1)}}"
+  },
+  {
+   "name": "overlayContentHide",
+   "css": "@keyframes overlayContentHide{0%{opacity:1;transform:translate(0)scale(1)}to{opacity:0;transform:translateY(-2%)scale(1)}}"
+  },
+  {
+   "name": "dropdownFadeIn",
+   "css": "@keyframes dropdownFadeIn{0%{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}"
+  },
+  {
+   "name": "dropdownFadeOut",
+   "css": "@keyframes dropdownFadeOut{0%{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.95)}}"
+  },
+  {
+   "name": "fadeInOverlayBg",
+   "css": "@keyframes fadeInOverlayBg{0%{opacity:0}to{opacity:.75}}"
+  },
+  {
+   "name": "fadeOutOverlayBg",
+   "css": "@keyframes fadeOutOverlayBg{0%{opacity:.75}to{opacity:0}}"
+  },
+  {
+   "name": "slideDown",
+   "css": "@keyframes slideDown{0%{opacity:0;height:0}to{height:var(--radix-accordion-content-height,var(--radix-collapsible-content-height));opacity:1}}"
+  },
+  {
+   "name": "slideUp",
+   "css": "@keyframes slideUp{0%{height:var(--radix-accordion-content-height,var(--radix-collapsible-content-height));opacity:1}to{opacity:0;height:0}}"
+  },
+  {
+   "name": "slideDownNormal",
+   "css": "@keyframes slideDownNormal{0%{opacity:0;height:0}to{height:inherit;opacity:1}}"
+  },
+  {
+   "name": "slideUpNormal",
+   "css": "@keyframes slideUpNormal{0%{height:inherit;opacity:1}to{opacity:0;height:0}}"
+  },
+  {
+   "name": "panelSlideLeftOut",
+   "css": "@keyframes panelSlideLeftOut{0%{opacity:0;transform:translate(-100%)}to{opacity:1;transform:translate(0)}}"
+  },
+  {
+   "name": "panelSlideLeftIn",
+   "css": "@keyframes panelSlideLeftIn{0%{opacity:1;transform:translate(0)}to{opacity:0;transform:translate(-100%)}}"
+  },
+  {
+   "name": "panelSlideRightOut",
+   "css": "@keyframes panelSlideRightOut{0%{opacity:0;transform:translate(100%)}to{opacity:1;transform:translate(0)}}"
+  },
+  {
+   "name": "panelSlideRightIn",
+   "css": "@keyframes panelSlideRightIn{0%{opacity:1;transform:translate(0)}to{opacity:0;transform:translate(100%)}}"
+  },
+  {
+   "name": "lineLoading",
+   "css": "@keyframes lineLoading{0%{width:80px;margin-left:-10%}25%{width:240px}50%{width:80px;margin-left:100%}75%{width:240px}to{width:80px;margin-left:-10%}}"
+  },
+  {
+   "name": "flash-code",
+   "css": "@keyframes flash-code{0%{background-color:#3fcf8e1a}to{background-color:#0000}}"
+  },
+  {
+   "name": "accordion-down",
+   "css": "@keyframes accordion-down{0%{height:0}to{height:var(--radix-accordion-content-height,var(--bits-accordion-content-height,var(--reka-accordion-content-height,var(--kb-accordion-content-height,var(--ngp-accordion-content-height,auto)))))}}"
+  },
+  {
+   "name": "accordion-up",
+   "css": "@keyframes accordion-up{0%{height:var(--radix-accordion-content-height,var(--bits-accordion-content-height,var(--reka-accordion-content-height,var(--kb-accordion-content-height,var(--ngp-accordion-content-height,auto)))))}to{height:0}}"
+  },
+  {
+   "name": "collapsible-down",
+   "css": "@keyframes collapsible-down{0%{height:0}to{height:var(--radix-collapsible-content-height,var(--bits-collapsible-content-height,var(--reka-collapsible-content-height,var(--kb-collapsible-content-height,auto))))}}"
+  },
+  {
+   "name": "collapsible-up",
+   "css": "@keyframes collapsible-up{0%{height:var(--radix-collapsible-content-height,var(--bits-collapsible-content-height,var(--reka-collapsible-content-height,var(--kb-collapsible-content-height,auto))))}to{height:0}}"
+  },
+  {
+   "name": "tw-shimmer",
+   "css": "@keyframes tw-shimmer{0%{background-position:100% 0}to{background-position:0 0}}"
+  },
+  {
+   "name": "scroll-fade-start",
+   "css": "@keyframes scroll-fade-start{0%{--scroll-fade-start:0px}to{--scroll-fade-start:32px}}"
+  },
+  {
+   "name": "scroll-fade-end",
+   "css": "@keyframes scroll-fade-end{0%{--scroll-fade-end:32px}to{--scroll-fade-end:0px}}"
+  },
+  {
+   "name": "draw-line",
+   "css": "@keyframes draw-line{0%{stroke-dashoffset:1px}}"
+  },
+  {
+   "name": "reveal-hatch",
+   "css": "@keyframes reveal-hatch{0%{scale:0}to{scale:1}}"
+  },
+  {
+   "name": "slideIn",
+   "css": "@keyframes slideIn{0%{transform:translateY(-100%)}to{transform:translate(0)}}"
+  },
+  {
+   "name": "spinner",
+   "css": "@keyframes spinner{0%{transform:rotate(0)}to{transform:rotate(1turn)}}"
+  },
+  {
+   "name": "marquee",
+   "css": "@keyframes marquee{0%{transform:translate(0)}to{transform:translate(-100%)}}"
+  },
+  {
+   "name": "marquee-reverse",
+   "css": "@keyframes marquee-reverse{0%{transform:translate(-100%)}to{transform:translate(0)}}"
+  },
+  {
+   "name": "marquee-vertical",
+   "css": "@keyframes marquee-vertical{0%{transform:translateY(0)}to{transform:translateY(-100%)}}"
+  },
+  {
+   "name": "pulse-radar",
+   "css": "@keyframes pulse-radar{0%{opacity:0;transform:scale(0)}50%{opacity:.8}to{opacity:0;transform:scale(1)}}"
+  },
+  {
+   "name": "fadeInUp",
+   "css": "@keyframes fadeInUp{to{opacity:1;transform:translate(0)}}"
+  },
+  {
+   "name": "AnimationName",
+   "css": "@keyframes AnimationName{0%{background-position:0}50%{background-position:100%}to{background-position:0}}"
+  },
+  {
+   "name": "spin",
+   "css": "@keyframes spin{to{transform:rotate(1turn)}}"
+  },
+  {
+   "name": "transformSpin",
+   "css": "@keyframes transformSpin{0%{transform:rotate(0)}to{transform:rotate(1turn)}}"
+  },
+  {
+   "name": "loader-dots1",
+   "css": "@keyframes loader-dots1{0%{transform:scale(0)}to{transform:scale(1)}}"
+  },
+  {
+   "name": "loader-dots3",
+   "css": "@keyframes loader-dots3{0%{transform:scale(1)}to{transform:scale(0)}}"
+  },
+  {
+   "name": "loader-dots2",
+   "css": "@keyframes loader-dots2{0%{transform:translate(0)}to{transform:translate(12px)}}"
+  },
+  {
+   "name": "ping",
+   "css": "@keyframes ping{75%,to{opacity:0;transform:scale(2)}}"
+  },
+  {
+   "name": "pulse",
+   "css": "@keyframes pulse{50%{opacity:.5}}"
+  },
+  {
+   "name": "bounce",
+   "css": "@keyframes bounce{0%,to{animation-timing-function:cubic-bezier(.8,0,1,1);transform:translateY(-25%)}50%{animation-timing-function:cubic-bezier(0,0,.2,1);transform:none}}"
+  },
+  {
+   "name": "enter",
+   "css": "@keyframes enter{0%{opacity:var(--tw-enter-opacity,1);transform:translate3d(var(--tw-enter-translate-x,0),var(--tw-enter-translate-y,0),0)scale3d(var(--tw-enter-scale,1),var(--tw-enter-scale,1),var(--tw-enter-scale,1))rotate(var(--tw-enter-rotate,0));filter:blur(var(--tw-enter-blur,0))}}"
+  },
+  {
+   "name": "exit",
+   "css": "@keyframes exit{to{opacity:var(--tw-exit-opacity,1);transform:translate3d(var(--tw-exit-translate-x,0),var(--tw-exit-translate-y,0),0)scale3d(var(--tw-exit-scale,1),var(--tw-exit-scale,1),var(--tw-exit-scale,1))rotate(var(--tw-exit-rotate,0));filter:blur(var(--tw-exit-blur,0))}}"
+  },
+  {
+   "name": "caret-blink",
+   "css": "@keyframes caret-blink{0%,70%,to{opacity:1}20%,50%{opacity:0}}"
+  },
+  {
+   "name": "opacity-pulse",
+   "css": "@keyframes opacity-pulse{0%{opacity:.4}to{opacity:1}}"
+  },
+  {
+   "name": "opacity-pulse-full",
+   "css": "@keyframes opacity-pulse-full{0%{opacity:0}to{opacity:1}}"
+  },
+  {
+   "name": "compute-visual_flow__cIIFX",
+   "css": "@keyframes compute-visual_flow__cIIFX{to{stroke-dashoffset:-12}}"
+  },
+  {
+   "name": "loading-anim_dash__HIPR0",
+   "css": "@keyframes loading-anim_dash__HIPR0{0%{stroke-dashoffset:52}to{stroke-dashoffset:280}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step1_square1__BIjL3",
+   "css": "@keyframes ai-icon-animation-style_step1_square1__BIjL3{0%{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(0deg);top:0;left:0;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step1_square2__QzsE7",
+   "css": "@keyframes ai-icon-animation-style_step1_square2__QzsE7{0%{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(0deg);top:0;left:8px;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step1_square3__ls1SO",
+   "css": "@keyframes ai-icon-animation-style_step1_square3__ls1SO{0%{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(0deg);top:8px;left:0;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step1_square4__Kk8zi",
+   "css": "@keyframes ai-icon-animation-style_step1_square4__Kk8zi{0%{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(0deg);top:8px;left:8px;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step2_square1__o_hcu",
+   "css": "@keyframes ai-icon-animation-style_step2_square1__o_hcu{0%{transform:rotate(0deg);top:0;left:0;width:16px;height:16px;border-radius:0}to{transform:rotate(45deg);top:1px;left:1px;width:8px;height:8px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step2_square2__HBZt7",
+   "css": "@keyframes ai-icon-animation-style_step2_square2__HBZt7{0%{transform:rotate(0deg);top:0;left:8px;width:16px;height:16px;border-radius:0}to{transform:rotate(45deg);top:1px;left:15px;width:8px;height:8px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step2_square3__K6E2K",
+   "css": "@keyframes ai-icon-animation-style_step2_square3__K6E2K{0%{transform:rotate(0deg);top:8px;left:0;width:16px;height:16px;border-radius:0}to{transform:rotate(45deg);top:15px;left:1px;width:8px;height:8px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step2_square4__oDGDL",
+   "css": "@keyframes ai-icon-animation-style_step2_square4__oDGDL{0%{transform:rotate(0deg);top:8px;left:8px;width:16px;height:16px;border-radius:0}to{transform:rotate(45deg);top:15px;left:15px;width:8px;height:8px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step3_square1__Oo6vT",
+   "css": "@keyframes ai-icon-animation-style_step3_square1__Oo6vT{0%{transform:rotate(45deg);top:0;left:0;width:8px;height:8px;border-radius:0}to{transform:rotate(0deg);top:0;left:0;width:6px;height:6px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step3_square2__36Os9",
+   "css": "@keyframes ai-icon-animation-style_step3_square2__36Os9{0%{transform:rotate(45deg);top:0;left:16px;width:8px;height:8px;border-radius:0}to{transform:rotate(0deg);top:0;left:18px;width:6px;height:6px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step3_square3__Nj5rc",
+   "css": "@keyframes ai-icon-animation-style_step3_square3__Nj5rc{0%{transform:rotate(45deg);top:16px;left:0;width:8px;height:8px;border-radius:0}to{transform:rotate(0deg);top:18px;left:0;width:6px;height:6px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step3_square4__OFVFh",
+   "css": "@keyframes ai-icon-animation-style_step3_square4__OFVFh{0%{transform:rotate(45deg);top:16px;left:16px;width:8px;height:8px;border-radius:0}to{transform:rotate(0deg);top:18px;left:18px;width:6px;height:6px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step4_square1__G_8pn",
+   "css": "@keyframes ai-icon-animation-style_step4_square1__G_8pn{0%{transform:rotate(0deg);top:0;left:0;width:6px;height:6px;border-radius:100%}to{transform:rotate(0deg);top:0;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step4_square2__KHYf3",
+   "css": "@keyframes ai-icon-animation-style_step4_square2__KHYf3{0%{transform:rotate(0deg);top:0;left:18px;width:6px;height:6px;border-radius:100%}to{transform:rotate(0deg);top:8px;left:16px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step4_square3__XON12",
+   "css": "@keyframes ai-icon-animation-style_step4_square3__XON12{0%{transform:rotate(0deg);top:18px;left:0;width:6px;height:6px;border-radius:100%}to{transform:rotate(0deg);top:8px;left:0;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step4_square4__Aq8dV",
+   "css": "@keyframes ai-icon-animation-style_step4_square4__Aq8dV{0%{transform:rotate(0deg);top:18px;left:18px;width:6px;height:6px;border-radius:100%}to{transform:rotate(0deg);top:16px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step5_square1__me9Ru",
+   "css": "@keyframes ai-icon-animation-style_step5_square1__me9Ru{0%{transform:rotate(0deg);top:0;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step5_square2__0Ydfw",
+   "css": "@keyframes ai-icon-animation-style_step5_square2__0Ydfw{0%{transform:rotate(0deg);top:8px;left:16px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step5_square3__bOHqW",
+   "css": "@keyframes ai-icon-animation-style_step5_square3__bOHqW{0%{transform:rotate(0deg);top:8px;left:0;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_step5_square4__m2l32",
+   "css": "@keyframes ai-icon-animation-style_step5_square4__m2l32{0%{transform:rotate(0deg);top:16px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_spinAiIconContainer__rBP6P",
+   "css": "@keyframes ai-icon-animation-style_spinAiIconContainer__rBP6P{0%{transform:rotate(0deg)}40%{transform:rotate(-45deg)}80%{transform:rotate(90deg)}to{transform:rotate(90deg)}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step1_square1__C_GBC",
+   "css": "@keyframes ai-icon-animation-style_exit_step1_square1__C_GBC{0%{transform:rotate(0deg);top:0;left:0;width:16px;height:16px;border-radius:0}to{transform:rotate(45deg);top:4px;left:4px;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step1_square2__TID0l",
+   "css": "@keyframes ai-icon-animation-style_exit_step1_square2__TID0l{0%{transform:rotate(0deg);top:0;left:8px;width:16px;height:16px;border-radius:0}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step1_square3__ADmUT",
+   "css": "@keyframes ai-icon-animation-style_exit_step1_square3__ADmUT{0%{transform:rotate(0deg);top:8px;left:0;width:16px;height:16px;border-radius:0}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step1_square4__kilu_",
+   "css": "@keyframes ai-icon-animation-style_exit_step1_square4__kilu_{0%{transform:rotate(0deg);top:8px;left:8px;width:16px;height:16px;border-radius:0}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step2_square1__vmYa5",
+   "css": "@keyframes ai-icon-animation-style_exit_step2_square1__vmYa5{0%{transform:rotate(45deg);top:1px;left:1px;width:8px;height:8px;border-radius:0}to{transform:rotate(45deg);top:4px;left:4px;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step2_square2__zxv0q",
+   "css": "@keyframes ai-icon-animation-style_exit_step2_square2__zxv0q{0%{transform:rotate(45deg);top:1px;left:15px;width:8px;height:8px;border-radius:0}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step2_square3__Dhey5",
+   "css": "@keyframes ai-icon-animation-style_exit_step2_square3__Dhey5{0%{transform:rotate(45deg);top:15px;left:1px;width:8px;height:8px;border-radius:0}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step2_square4__P1UKx",
+   "css": "@keyframes ai-icon-animation-style_exit_step2_square4__P1UKx{0%{transform:rotate(45deg);top:15px;left:15px;width:8px;height:8px;border-radius:0}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step3_square1__l1FKu",
+   "css": "@keyframes ai-icon-animation-style_exit_step3_square1__l1FKu{0%{transform:rotate(0deg);top:0;left:0;width:6px;height:6px;border-radius:100%}to{transform:rotate(45deg);top:4px;left:4px;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step3_square2__4RPQL",
+   "css": "@keyframes ai-icon-animation-style_exit_step3_square2__4RPQL{0%{transform:rotate(0deg);top:0;left:18px;width:6px;height:6px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step3_square3__s2vMz",
+   "css": "@keyframes ai-icon-animation-style_exit_step3_square3__s2vMz{0%{transform:rotate(0deg);top:18px;left:0;width:6px;height:6px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step3_square4__Zros9",
+   "css": "@keyframes ai-icon-animation-style_exit_step3_square4__Zros9{0%{transform:rotate(0deg);top:18px;left:18px;width:6px;height:6px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step4_square1__bG99O",
+   "css": "@keyframes ai-icon-animation-style_exit_step4_square1__bG99O{0%{transform:rotate(0deg);top:0;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:4px;left:4px;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step4_square2__1Fxvf",
+   "css": "@keyframes ai-icon-animation-style_exit_step4_square2__1Fxvf{0%{transform:rotate(0deg);top:8px;left:16px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step4_square3__EWeB7",
+   "css": "@keyframes ai-icon-animation-style_exit_step4_square3__EWeB7{0%{transform:rotate(0deg);top:8px;left:0;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step4_square4__HC5ov",
+   "css": "@keyframes ai-icon-animation-style_exit_step4_square4__HC5ov{0%{transform:rotate(0deg);top:16px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step5_square1__w4ctB",
+   "css": "@keyframes ai-icon-animation-style_exit_step5_square1__w4ctB{0%{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:4px;left:4px;width:16px;height:16px;border-radius:0}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step5_square2__UZdas",
+   "css": "@keyframes ai-icon-animation-style_exit_step5_square2__UZdas{0%{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step5_square3__O_mvc",
+   "css": "@keyframes ai-icon-animation-style_exit_step5_square3__O_mvc{0%{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  },
+  {
+   "name": "ai-icon-animation-style_exit_step5_square4__SKL7Z",
+   "css": "@keyframes ai-icon-animation-style_exit_step5_square4__SKL7Z{0%{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}to{transform:rotate(45deg);top:8px;left:8px;width:8px;height:8px;border-radius:100%}}"
+  }
+ ],
+ "animations": [
+  {
+   "path": "div.sticky.top-0:nth-of-type(3) > nav.relative.z-40 > div.section-container.relative > div.flex.items-center > div.flex.items-center:nth-of-type(2)",
+   "name": "fadeIn",
+   "duration": "0.3s",
+   "delay": "0.3s",
+   "easing": "ease",
+   "iterations": "1",
+   "direction": "normal",
+   "fill": "both",
+   "section": 0
+  },
+  {
+   "path": "div.p-px.bg-surface-75 > div.z-10.relative > span > figure.absolute.inset-0 > div.relative.h-full:nth-of-type(1)",
+   "name": "marquee",
+   "duration": "35s",
+   "delay": "0s",
+   "easing": "linear",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "div.p-px.bg-surface-75 > div.z-10.relative > span > figure.absolute.inset-0 > div.relative.h-full:nth-of-type(2)",
+   "name": "marquee",
+   "duration": "35s",
+   "delay": "0s",
+   "easing": "linear",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(1) > div.absolute.left-full > div.rounded-full.bg-foreground-lighter:nth-of-type(1)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(1) > div.absolute.left-full > div.rounded-full.bg-foreground-lighter:nth-of-type(2)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0.2s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(1) > div.absolute.left-full > div.rounded-full.bg-foreground-lighter:nth-of-type(3)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0.4s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(2) > div.absolute.left-full > div.rounded-full.bg-foreground-lighter:nth-of-type(1)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(2) > div.absolute.left-full > div.rounded-full.bg-foreground-lighter:nth-of-type(2)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0.2s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(2) > div.absolute.left-full > div.rounded-full.bg-foreground-lighter:nth-of-type(3)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0.4s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(3) > div.w-auto.h-auto > div.rounded-full.bg-brand-default:nth-of-type(1)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(3) > div.w-auto.h-auto > div.rounded-full.bg-brand-default:nth-of-type(2)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0.2s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "span > figure.absolute.inset-0 > div.absolute.will-change-transform:nth-of-type(3) > div.w-auto.h-auto > div.rounded-full.bg-brand-default:nth-of-type(3)",
+   "name": "pulse",
+   "duration": "0.6s",
+   "delay": "0.4s",
+   "easing": "cubic-bezier(0.4, 0, 0.6, 1)",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "none",
+   "section": 2
+  },
+  {
+   "path": "div.z-10.relative > span > figure.absolute.inset-0 > div.absolute.z-0 > div.relative.h-full:nth-of-type(1)",
+   "name": "marquee-reverse",
+   "duration": "30s",
+   "delay": "0s",
+   "easing": "linear",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "both",
+   "section": 2
+  },
+  {
+   "path": "div.z-10.relative > span > figure.absolute.inset-0 > div.absolute.z-0 > div.relative.h-full:nth-of-type(2)",
+   "name": "marquee-reverse",
+   "duration": "30s",
+   "delay": "0s",
+   "easing": "linear",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "both",
+   "section": 2
+  },
+  {
+   "path": "div.z-10.relative > span > figure.absolute.inset-0 > div.absolute.z-0 > div.relative.h-full:nth-of-type(3)",
+   "name": "marquee-reverse",
+   "duration": "30s",
+   "delay": "0s",
+   "easing": "linear",
+   "iterations": "infinite",
+   "direction": "normal",
+   "fill": "both",
+   "section": 2
+  }
+ ],
+ "scripted": [
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 300,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 180,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 329.99999999999994,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 210,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 360,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 240,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 390,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 270,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 420,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 150,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 300,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 180,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 329.99999999999994,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 210,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 360,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 240,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 390,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 270,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 420,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": "auto",
+   "delay": 0,
+   "easing": "linear(0 0%, 1 100%)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.section-container.relative > div.grid.grid-cols-1 > div.border.border-border:nth-of-type(2) > div.relative.overflow-auto:nth-of-type(2) > div",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 150,
+   "delay": 50,
+   "easing": "ease-out",
+   "iterations": 1,
+   "section": 5
+  },
+  {
+   "path": "section#dashboard:nth-of-type(3) > div.section-container.relative > div.relative.rounded-2xl:nth-of-type(2) > div.h-full.w-full:nth-of-type(2) > div.relative.w-full",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 100,
+   "delay": 200,
+   "easing": "ease-out",
+   "iterations": 1,
+   "section": 4
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 0,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 150,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 300,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 30,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 180,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 329.99999999999994,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 60,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 210,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 360,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 90,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 240,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 390,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 120,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 270,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 420,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": -1
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 0,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 150,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 300,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 30,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 180,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 329.99999999999994,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 60,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 210,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 360,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 90,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 240,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 390,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 120,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 270,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(3)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 420,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 0,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(2)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 150,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 30,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 60,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 90,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 120,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 0,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 30,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 60,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 90,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(1)",
+   "keyframes": [
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "0",
+     "computedOffset": 0
+    },
+    {
+     "offset": null,
+     "easing": "linear",
+     "composite": "auto",
+     "opacity": "1",
+     "computedOffset": 1
+    }
+   ],
+   "duration": 450,
+   "delay": 120,
+   "easing": "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+   "iterations": 1,
+   "section": 8
+  }
+ ],
+ "players": [
+  {
+   "kind": "video",
+   "src": "assets/media/039-supabase-table-editor-light.webm",
+   "poster": "assets/images/038-supabase-table-editor-light.png",
+   "path": "div.relative.rounded-2xl:nth-of-type(2) > div.h-full.w-full:nth-of-type(2) > div.relative.w-full > div.relative.h-full > video.relative.z-10",
+   "section": 4
+  }
+ ],
+ "scrollReveals": [
+  {
+   "path": "div.section-container.relative > div.flex.items-center > div.flex.items-center:nth-of-type(1) > div.flex.items-center > a#radix-_R_lisnnalb_",
+   "classes": "relative isolate block w-auto h-6 box-content -mx-2 -my-3 px-2 py-3 focus-ring focus-visible:ring-offset-background-alternative rounded-md transition-colors duration-200 ease-out motion-reduce:transition-none",
+   "transition": "color 0.2s cubic-bezier(0, 0, 0.2, 1), background-color 0.2s cubic-bezier(0, 0, 0.2, 1), border-color 0.2s cubic-bezier(0, 0, 0.2, 1), outline-color 0.2s cubic-bezier(0, 0, 0.2, 1), text-decoration-color 0.2s cubic-bezier(0, 0, 0.2, 1), fill 0.2s cubic-bezier(0, 0, 0.2, 1), stroke 0.2s cubic-bezier(0, 0, 0.2, 1), --tw-gradient-from 0.2s cubic-bezier(0, 0, 0.2, 1), --tw-gradient-via 0.2s cubic-bezier(0, 0, 0.2, 1), --tw-gradient-to 0.2s cubic-bezier(0, 0, 0.2, 1)",
+   "section": 0
+  },
+  {
+   "path": "nav.z-10.flex-1 > div:nth-of-type(1) > ul.group.flex > li.text-sm.font-medium:nth-of-type(4) > a.flex.items-center",
+   "classes": "group/menu-item flex items-center text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring group-hover:bg-transparent text-foreground focus-visible:text-primary px-2.5 h-full",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "nav.z-10.flex-1 > div:nth-of-type(1) > ul.group.flex > li.text-sm.font-medium:nth-of-type(6) > a.flex.items-center",
+   "classes": "group/menu-item flex items-center text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring group-hover:bg-transparent text-foreground focus-visible:text-primary px-2.5 h-full",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > div:nth-of-type(1) > div.hidden.flex-wrap > a.inline-flex.h-8:nth-of-type(1)",
+   "classes": "inline-flex h-8 items-center rounded-md border px-4 text-sm text-foreground-light focus-ring aria-pressed:bg-surface-200 aria-pressed:text-foreground aria-[current=true]:text-foreground",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > div:nth-of-type(1) > div.hidden.flex-wrap > a.inline-flex.h-8:nth-of-type(3)",
+   "classes": "inline-flex h-8 items-center rounded-md border px-4 text-sm text-foreground-light focus-ring aria-pressed:bg-surface-200 aria-pressed:text-foreground aria-[current=true]:text-foreground",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.fixed.inset-x-0:nth-of-type(4) > div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > a.flex.text-foreground-light:nth-of-type(1)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.fixed.inset-x-0:nth-of-type(4) > div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > a.flex.text-foreground-light:nth-of-type(2)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.fixed.inset-x-0:nth-of-type(4) > div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > a.flex.text-foreground-light:nth-of-type(3)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.fixed.inset-x-0:nth-of-type(4) > div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > a.flex.text-foreground-light:nth-of-type(4)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.fixed.inset-x-0:nth-of-type(4) > div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > a.flex.text-foreground-light:nth-of-type(5)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.fixed.inset-x-0:nth-of-type(4) > div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > a.flex.text-foreground-light:nth-of-type(6)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "nav.flex.flex-col > div:nth-of-type(2) > ul.flex.flex-col > li:nth-of-type(1) > a.flex.text-foreground-light",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "nav.flex.flex-col > div:nth-of-type(2) > ul.flex.flex-col > li:nth-of-type(2) > a.flex.text-foreground-light",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "nav.flex.flex-col > div:nth-of-type(2) > ul.flex.flex-col > li:nth-of-type(3) > a.flex.text-foreground-light",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md p-2 leading-none no-underline focus-ring focus-visible:text-foreground items-center",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.fixed.inset-x-0:nth-of-type(4) > div.min-h-0.flex-1:nth-of-type(1) > nav.flex.flex-col > a.flex.items-center:nth-of-type(7)",
+   "classes": "\n            flex items-center justify-between group text-sm\n            p-4 mt-4 gap-2\n            rounded-lg border\n            bg-alternative-200 text-foreground-light\n            hover:text-foreground hover:border-foreground-muted\n            focus-visible:text-foreground focus-ring\n          ",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "header > div.section-container.relative > div.flex.flex-col > div.flex.items-center:nth-of-type(2) > a.relative.inline-flex:nth-of-type(2)",
+   "classes": "relative inline-flex items-center justify-center cursor-pointer space-x-2 text-center font-medium ease-[cubic-bezier(0.22,1,0.36,1)] duration-200 transition-[background-color,border-color,color,scale] [&:not([aria-haspopup])]:motion-safe:active:scale-[0.97] focus-ring control-surface-shadows border-0 raised-control-surface text-base md:text-sm px-4 py-2 h-[38px] rounded-[calc(var(--radius-md)*(1+(38/26-1)*0.35))]",
+   "transition": "background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s cubic-bezier(0.22, 1, 0.36, 1), scale 0.2s cubic-bezier(0.22, 1, 0.36, 1)",
+   "section": 1
+  },
+  {
+   "path": "div.relative.w-full:nth-of-type(5) > main#main > section#products:nth-of-type(1) > div.section-container.relative > a.group.relative:nth-of-type(1)",
+   "classes": "group relative w-full sm:h-[400px] flex flex-col gap-5 lg:flex-row focus-ring rounded-xl col-span-6 md:col-span-12 xl:col-span-6",
+   "transition": "all",
+   "section": 2
+  },
+  {
+   "path": "div.relative.w-full:nth-of-type(5) > main#main > section#products:nth-of-type(1) > div.section-container.relative > a.group.relative:nth-of-type(2)",
+   "classes": "group relative w-full sm:h-[400px] flex flex-col gap-5 lg:flex-row focus-ring rounded-xl col-span-6 xl:col-span-3",
+   "transition": "all",
+   "section": 2
+  },
+  {
+   "path": "div.relative.w-full:nth-of-type(5) > main#main > section#products:nth-of-type(1) > div.section-container.relative > a.group.relative:nth-of-type(3)",
+   "classes": "group relative w-full sm:h-[400px] flex flex-col gap-5 lg:flex-row focus-ring rounded-xl col-span-6 xl:col-span-3",
+   "transition": "all",
+   "section": 2
+  },
+  {
+   "path": "div.relative.w-full:nth-of-type(5) > main#main > section#products:nth-of-type(1) > div.section-container.relative > a.group.relative:nth-of-type(4)",
+   "classes": "group relative w-full sm:h-[400px] flex flex-col gap-5 lg:flex-row focus-ring rounded-xl col-span-6 xl:col-span-3",
+   "transition": "all",
+   "section": 2
+  },
+  {
+   "path": "div.relative.w-full:nth-of-type(5) > main#main > section#products:nth-of-type(1) > div.section-container.relative > a.group.relative:nth-of-type(5)",
+   "classes": "group relative w-full sm:h-[400px] flex flex-col gap-5 lg:flex-row focus-ring rounded-xl col-span-6 xl:col-span-3 hover:cursor-[url('/images/index/products/realtime-cursor-light.svg'),auto]! dark:hover:cursor-[url('/images/index/products/realtime-cursor-dark.svg'),auto]!",
+   "transition": "all",
+   "section": 2
+  },
+  {
+   "path": "div.relative.w-full:nth-of-type(5) > main#main > section#products:nth-of-type(1) > div.section-container.relative > a.group.relative:nth-of-type(6)",
+   "classes": "group relative w-full sm:h-[400px] flex flex-col gap-5 lg:flex-row focus-ring rounded-xl col-span-6 xl:col-span-3",
+   "transition": "all",
+   "section": 2
+  },
+  {
+   "path": "section#customer-stories:nth-of-type(6) > div.py-24.flex > div.section-container.relative:nth-of-type(1) > div.flex.flex-col > a.text-sm.text-foreground-light",
+   "classes": "text-sm text-foreground-light hover:text-foreground underline",
+   "transition": "all",
+   "section": 7
+  },
+  {
+   "path": "div.section-container.relative:nth-of-type(2) > div.flex.flex-col:nth-of-type(1) > div.text-left.rounded-lg:nth-of-type(1) > div.flex.flex-col > a.text-xs.underline",
+   "classes": "text-xs underline",
+   "transition": "all",
+   "section": 7
+  },
+  {
+   "path": "div.hidden.gap-2:nth-of-type(2) > div.text-left.flex:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > a.text-xs.underline",
+   "classes": "text-xs underline",
+   "transition": "all",
+   "section": 7
+  },
+  {
+   "path": "div.hidden.gap-2:nth-of-type(2) > div.text-left.flex:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > a.text-xs.underline",
+   "classes": "text-xs underline",
+   "transition": "all",
+   "section": 7
+  },
+  {
+   "path": "div.hidden.gap-2:nth-of-type(2) > div.text-left.flex:nth-of-type(3) > div.flex.flex-col:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > a.text-xs.underline",
+   "classes": "text-xs underline",
+   "transition": "all",
+   "section": 7
+  },
+  {
+   "path": "div.hidden.gap-2:nth-of-type(2) > div.text-left.flex:nth-of-type(4) > div.flex.flex-col:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > a.text-xs.underline",
+   "classes": "text-xs underline",
+   "transition": "all",
+   "section": 7
+  },
+  {
+   "path": "div.hidden.gap-2:nth-of-type(2) > div.text-left.flex:nth-of-type(5) > div.flex.flex-col:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > a.text-xs.underline",
+   "classes": "text-xs underline",
+   "transition": "all",
+   "section": 7
+  },
+  {
+   "path": "section#cta:nth-of-type(9) > div.relative.overflow-hidden > div.relative.z-20 > div.flex.items-center > a.relative.inline-flex:nth-of-type(2)",
+   "classes": "relative inline-flex items-center justify-center cursor-pointer space-x-2 text-center font-medium ease-[cubic-bezier(0.22,1,0.36,1)] duration-200 transition-[background-color,border-color,color,scale] [&:not([aria-haspopup])]:motion-safe:active:scale-[0.97] focus-ring control-surface-shadows border-0 raised-control-surface text-base md:text-sm px-4 py-2 h-[38px] rounded-[calc(var(--radius-md)*(1+(38/26-1)*0.35))]",
+   "transition": "background-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s cubic-bezier(0.22, 1, 0.36, 1), scale 0.2s cubic-bezier(0.22, 1, 0.36, 1)",
+   "section": 10
+  },
+  {
+   "path": "footer.bg-alternative > div.w-full:nth-of-type(1) > div.section-container.relative:nth-of-type(1) > div.flex.flex-col > a.text-primary",
+   "classes": "text-primary hover:underline",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "footer.bg-alternative > div.section-container.relative:nth-of-type(2) > div:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > a.w-40",
+   "classes": "w-40",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(1) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(2) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(3) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(4) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(5) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(6) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(7) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(8) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(9) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(10) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(1) > ul.mt-4.space-y-2 > li:nth-of-type(11) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(1) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(2) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(3) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(4) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(5) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(6) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(7) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(8) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(9) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(10) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(11) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(12) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(13) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(14) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(15) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(16) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(17) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(2) > ul.mt-4.space-y-2 > li:nth-of-type(18) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(3) > ul.mt-4.space-y-2 > li:nth-of-type(1) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(3) > ul.mt-4.space-y-2 > li:nth-of-type(2) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(3) > ul.mt-4.space-y-2 > li:nth-of-type(4) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(3) > ul.mt-4.space-y-2 > li:nth-of-type(5) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(3) > ul.mt-4.space-y-2 > li:nth-of-type(8) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(3) > ul.mt-4.space-y-2 > li:nth-of-type(9) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(3) > ul.mt-4.space-y-2 > li:nth-of-type(10) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(3) > ul.mt-4.space-y-2 > li:nth-of-type(12) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(4) > ul.mt-4.space-y-2 > li:nth-of-type(3) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(4) > ul.mt-4.space-y-2 > li:nth-of-type(4) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(5) > ul.mt-4.space-y-2 > li:nth-of-type(1) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(5) > ul.mt-4.space-y-2 > li:nth-of-type(2) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(5) > ul.mt-4.space-y-2 > li:nth-of-type(4) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(6) > ul.mt-4.space-y-2 > li:nth-of-type(1) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(6) > ul.mt-4.space-y-2 > li:nth-of-type(2) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(6) > ul.mt-4.space-y-2 > li:nth-of-type(3) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(6) > ul.mt-4.space-y-2 > li:nth-of-type(4) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(6) > ul.mt-4.space-y-2 > li:nth-of-type(5) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(6) > ul.mt-4.space-y-2 > li:nth-of-type(7) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.grid.grid-cols-2 > div:nth-of-type(6) > ul.mt-4.space-y-2 > li:nth-of-type(11) > a",
+   "classes": "",
+   "transition": "all",
+   "section": 11
+  },
+  {
+   "path": "div.relative.w-full:nth-of-type(5) > main#main > section#dashboard:nth-of-type(3) > div.section-container.relative",
+   "classes": "section-container relative py-16 sm:py-18 md:py-24 pt-10! pb-4! space-y-8 overflow-hidden",
+   "transition": "all",
+   "section": 4
+  },
+  {
+   "path": "main#main > section#open-source:nth-of-type(8) > div.relative > div.hidden.absolute:nth-of-type(1) > svg",
+   "classes": "",
+   "transition": "all",
+   "section": 9
+  },
+  {
+   "path": "div.relative > div.section-container.relative:nth-of-type(2) > div.flex.flex-col > div.relative.w-full:nth-of-type(2) > svg",
+   "classes": "",
+   "transition": "all",
+   "section": 9
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(1) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(1)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(1) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(2)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(1) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(3)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(1) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(4)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(1) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(5)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(1) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(6)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(2) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(1)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(2) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(2)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(2) > ul.flex.flex-col > a.flex.text-foreground-light:nth-of-type(3)",
+   "classes": "group/menu-item flex text-foreground-light text-sm hover:text-foreground select-none gap-3 rounded-md leading-none no-underline focus-ring focus-visible:text-foreground items-center h-fit p-0",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col:nth-of-type(1) > div.flex.flex-row > div.flex.flex-col:nth-of-type(2) > ul.flex.flex-col > a.h-fit.flex:nth-of-type(4)",
+   "classes": "\n                h-fit group/menu-item\n                flex items-center gap-3\n                text-sm leading-none\n                text-foreground-light hover:text-foreground\n                no-underline select-none\n                focus-ring focus-visible:text-foreground\n              ",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.flex.flex-col > div.bg-surface-75.border-t:nth-of-type(2) > div.col-span-3.flex:nth-of-type(1) > div > a.group.flex",
+   "classes": "group flex items-center gap-1 text-foreground-lighter hover:text-foreground text-xs uppercase tracking-widest font-mono mb-4 focus-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background-alternative rounded-xs focus-visible:text-foreground",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.col-span-3.flex:nth-of-type(1) > div > ul.flex.flex-row > li > a.group.flex",
+   "classes": "group flex items-center gap-3 focus-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background-alternative rounded-sm",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.bg-surface-75.border-t:nth-of-type(2) > div.w-full:nth-of-type(2) > ul.flex.flex-col > li:nth-of-type(1) > a.text-foreground-light.block",
+   "classes": "group/text-link text-foreground-light block cursor-pointer text-sm focus-ring focus-visible:rounded-xs mt-0 hover:text-foreground focus-visible:text-foreground focus-visible:ring-offset-4 focus-visible:ring-offset-background-overlay",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.bg-surface-75.border-t:nth-of-type(2) > div.w-full:nth-of-type(2) > ul.flex.flex-col > li:nth-of-type(2) > a.text-foreground-light.block",
+   "classes": "group/text-link text-foreground-light block cursor-pointer text-sm focus-ring focus-visible:rounded-xs mt-0 hover:text-foreground focus-visible:text-foreground focus-visible:ring-offset-4 focus-visible:ring-offset-background-overlay",
+   "transition": "all",
+   "section": 0
+  },
+  {
+   "path": "div.bg-surface-75.border-t:nth-of-type(2) > div.w-full:nth-of-type(2) > ul.flex.flex-col > li:nth-of-type(3) > a.text-foreground-light.block",
+   "classes": "group/text-link text-foreground-light block cursor-pointer text-sm focus-ring focus-visible:rounded-xs mt-0 hover:text-foreground focus-visible:text-foreground focus-visible:ring-offset-4 focus-visible:ring-offset-background-overlay",
+   "transition": "all",
+   "section": 0
+  }
+ ],
+ "recorded": [
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.993413)",
+     2210
+    ],
+    [
+     2838,
+     "none",
+     2210
+    ],
+    [
+     8685,
+     "scale(0.999751)",
+     3490
+    ],
+    [
+     8699,
+     "scale(0.99859)",
+     3490
+    ],
+    [
+     8711,
+     "scale(0.997591)",
+     3490
+    ],
+    [
+     8727,
+     "scale(0.996166)",
+     3490
+    ],
+    [
+     8744,
+     "scale(0.994768)",
+     3490
+    ],
+    [
+     8761,
+     "scale(0.993403)",
+     3490
+    ],
+    [
+     8778,
+     "scale(0.992077)",
+     3490
+    ],
+    [
+     8794,
+     "scale(0.990895)",
+     3490
+    ],
+    [
+     8811,
+     "scale(0.98971)",
+     3490
+    ],
+    [
+     8827,
+     "scale(0.988669)",
+     3490
+    ],
+    [
+     8845,
+     "scale(0.987644)",
+     3490
+    ],
+    [
+     8865,
+     "scale(0.986534)",
+     3490
+    ],
+    [
+     8881,
+     "scale(0.985737)",
+     3490
+    ],
+    [
+     8910,
+     "scale(0.984407)",
+     3490
+    ],
+    [
+     8941,
+     "scale(0.983305)",
+     3490
+    ],
+    [
+     8970,
+     "scale(0.982677)",
+     3490
+    ],
+    [
+     8984,
+     "scale(0.982105)",
+     3490
+    ],
+    [
+     8995,
+     "scale(0.981769)",
+     3490
+    ],
+    [
+     9011,
+     "scale(0.981447)",
+     3490
+    ],
+    [
+     9027,
+     "scale(0.981126)",
+     3490
+    ],
+    [
+     9044,
+     "scale(0.980843)",
+     3490
+    ],
+    [
+     9061,
+     "scale(0.980618)",
+     3490
+    ],
+    [
+     9077,
+     "scale(0.980418)",
+     3490
+    ],
+    [
+     9094,
+     "scale(0.980251)",
+     3490
+    ],
+    [
+     9113,
+     "scale(0.980111)",
+     3490
+    ],
+    [
+     9128,
+     "scale(0.980015)",
+     3490
+    ],
+    [
+     9145,
+     "scale(0.98)",
+     3490
+    ]
+   ],
+   "changes": 29,
+   "startMs": 23222,
+   "durationMs": 9145,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.994867)",
+     2210
+    ],
+    [
+     2838,
+     "none",
+     2210
+    ],
+    [
+     8669,
+     "scale(0.99859)",
+     3490
+    ],
+    [
+     8685,
+     "scale(0.997254)",
+     3490
+    ],
+    [
+     8699,
+     "scale(0.996086)",
+     3490
+    ],
+    [
+     8711,
+     "scale(0.995099)",
+     3490
+    ],
+    [
+     8727,
+     "scale(0.993716)",
+     3490
+    ],
+    [
+     8744,
+     "scale(0.992383)",
+     3490
+    ],
+    [
+     8761,
+     "scale(0.991119)",
+     3490
+    ],
+    [
+     8778,
+     "scale(0.989915)",
+     3490
+    ],
+    [
+     8794,
+     "scale(0.988856)",
+     3490
+    ],
+    [
+     8811,
+     "scale(0.987812)",
+     3490
+    ],
+    [
+     8827,
+     "scale(0.986908)",
+     3490
+    ],
+    [
+     8845,
+     "scale(0.986023)",
+     3490
+    ],
+    [
+     8865,
+     "scale(0.985085)",
+     3490
+    ],
+    [
+     8881,
+     "scale(0.984407)",
+     3490
+    ],
+    [
+     8910,
+     "scale(0.983305)",
+     3490
+    ],
+    [
+     8941,
+     "scale(0.982391)",
+     3490
+    ],
+    [
+     8970,
+     "scale(0.981885)",
+     3490
+    ],
+    [
+     8984,
+     "scale(0.981424)",
+     3490
+    ],
+    [
+     8995,
+     "scale(0.981157)",
+     3490
+    ],
+    [
+     9011,
+     "scale(0.980904)",
+     3490
+    ],
+    [
+     9027,
+     "scale(0.98066)",
+     3490
+    ],
+    [
+     9044,
+     "scale(0.980451)",
+     3490
+    ],
+    [
+     9061,
+     "scale(0.980288)",
+     3490
+    ],
+    [
+     9077,
+     "scale(0.980146)",
+     3490
+    ],
+    [
+     9094,
+     "scale(0.980037)",
+     3490
+    ],
+    [
+     9113,
+     "scale(0.98)",
+     3490
+    ]
+   ],
+   "changes": 28,
+   "startMs": 23222,
+   "durationMs": 9113,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.985153)",
+     2210
+    ],
+    [
+     2838,
+     "none",
+     2210
+    ],
+    [
+     8811,
+     "scale(0.99917)",
+     3490
+    ],
+    [
+     8827,
+     "scale(0.997847)",
+     3490
+    ],
+    [
+     8845,
+     "scale(0.996421)",
+     3490
+    ],
+    [
+     8865,
+     "scale(0.994768)",
+     3490
+    ],
+    [
+     8881,
+     "scale(0.993481)",
+     3490
+    ],
+    [
+     8910,
+     "scale(0.991182)",
+     3490
+    ],
+    [
+     8941,
+     "scale(0.989114)",
+     3490
+    ],
+    [
+     8970,
+     "scale(0.987879)",
+     3490
+    ],
+    [
+     8984,
+     "scale(0.986693)",
+     3490
+    ],
+    [
+     8995,
+     "scale(0.985982)",
+     3490
+    ],
+    [
+     9011,
+     "scale(0.985269)",
+     3490
+    ],
+    [
+     9027,
+     "scale(0.984536)",
+     3490
+    ],
+    [
+     9044,
+     "scale(0.983871)",
+     3490
+    ],
+    [
+     9061,
+     "scale(0.983305)",
+     3490
+    ],
+    [
+     9077,
+     "scale(0.982768)",
+     3490
+    ],
+    [
+     9094,
+     "scale(0.982284)",
+     3490
+    ],
+    [
+     9113,
+     "scale(0.98184)",
+     3490
+    ],
+    [
+     9128,
+     "scale(0.981488)",
+     3490
+    ],
+    [
+     9145,
+     "scale(0.981179)",
+     3490
+    ],
+    [
+     9162,
+     "scale(0.980904)",
+     3490
+    ],
+    [
+     9177,
+     "scale(0.98066)",
+     3490
+    ],
+    [
+     9194,
+     "scale(0.980451)",
+     3490
+    ],
+    [
+     9211,
+     "scale(0.980279)",
+     3490
+    ],
+    [
+     9227,
+     "scale(0.980146)",
+     3490
+    ],
+    [
+     9244,
+     "scale(0.980037)",
+     3490
+    ],
+    [
+     9261,
+     "scale(0.98)",
+     3490
+    ]
+   ],
+   "changes": 28,
+   "startMs": 23222,
+   "durationMs": 9261,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.9917)",
+     2210
+    ],
+    [
+     2838,
+     "none",
+     2210
+    ],
+    [
+     8727,
+     "scale(0.998684)",
+     3490
+    ],
+    [
+     8744,
+     "scale(0.997254)",
+     3490
+    ],
+    [
+     8761,
+     "scale(0.995845)",
+     3490
+    ],
+    [
+     8778,
+     "scale(0.994438)",
+     3490
+    ],
+    [
+     8794,
+     "scale(0.993156)",
+     3490
+    ],
+    [
+     8811,
+     "scale(0.991848)",
+     3490
+    ],
+    [
+     8827,
+     "scale(0.990685)",
+     3490
+    ],
+    [
+     8845,
+     "scale(0.989506)",
+     3490
+    ],
+    [
+     8865,
+     "scale(0.988231)",
+     3490
+    ],
+    [
+     8881,
+     "scale(0.9873)",
+     3490
+    ],
+    [
+     8910,
+     "scale(0.985737)",
+     3490
+    ],
+    [
+     8941,
+     "scale(0.984407)",
+     3490
+    ],
+    [
+     8970,
+     "scale(0.983647)",
+     3490
+    ],
+    [
+     8984,
+     "scale(0.982953)",
+     3490
+    ],
+    [
+     8995,
+     "scale(0.982536)",
+     3490
+    ],
+    [
+     9011,
+     "scale(0.982132)",
+     3490
+    ],
+    [
+     9027,
+     "scale(0.981725)",
+     3490
+    ],
+    [
+     9044,
+     "scale(0.981367)",
+     3490
+    ],
+    [
+     9061,
+     "scale(0.981074)",
+     3490
+    ],
+    [
+     9077,
+     "scale(0.980801)",
+     3490
+    ],
+    [
+     9094,
+     "scale(0.98057)",
+     3490
+    ],
+    [
+     9113,
+     "scale(0.980366)",
+     3490
+    ],
+    [
+     9128,
+     "scale(0.980216)",
+     3490
+    ],
+    [
+     9145,
+     "scale(0.980097)",
+     3490
+    ],
+    [
+     9162,
+     "scale(0.980004)",
+     3490
+    ],
+    [
+     9177,
+     "scale(0.98)",
+     3490
+    ]
+   ],
+   "changes": 28,
+   "startMs": 23222,
+   "durationMs": 9177,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.989745)",
+     2210
+    ],
+    [
+     2838,
+     "none",
+     2210
+    ],
+    [
+     8744,
+     "scale(0.999751)",
+     3490
+    ],
+    [
+     8761,
+     "scale(0.998347)",
+     3490
+    ],
+    [
+     8778,
+     "scale(0.996918)",
+     3490
+    ],
+    [
+     8794,
+     "scale(0.995592)",
+     3490
+    ],
+    [
+     8811,
+     "scale(0.994201)",
+     3490
+    ],
+    [
+     8827,
+     "scale(0.992923)",
+     3490
+    ],
+    [
+     8845,
+     "scale(0.991633)",
+     3490
+    ],
+    [
+     8865,
+     "scale(0.990194)",
+     3490
+    ],
+    [
+     8881,
+     "scale(0.989114)",
+     3490
+    ],
+    [
+     8910,
+     "scale(0.9873)",
+     3490
+    ],
+    [
+     8941,
+     "scale(0.985737)",
+     3490
+    ],
+    [
+     8970,
+     "scale(0.984826)",
+     3490
+    ],
+    [
+     8984,
+     "scale(0.983985)",
+     3490
+    ],
+    [
+     8995,
+     "scale(0.983479)",
+     3490
+    ],
+    [
+     9011,
+     "scale(0.982977)",
+     3490
+    ],
+    [
+     9027,
+     "scale(0.982478)",
+     3490
+    ],
+    [
+     9044,
+     "scale(0.98203)",
+     3490
+    ],
+    [
+     9061,
+     "scale(0.981657)",
+     3490
+    ],
+    [
+     9077,
+     "scale(0.98131)",
+     3490
+    ],
+    [
+     9094,
+     "scale(0.981003)",
+     3490
+    ],
+    [
+     9113,
+     "scale(0.980729)",
+     3490
+    ],
+    [
+     9128,
+     "scale(0.980519)",
+     3490
+    ],
+    [
+     9145,
+     "scale(0.980346)",
+     3490
+    ],
+    [
+     9162,
+     "scale(0.980199)",
+     3490
+    ],
+    [
+     9177,
+     "scale(0.980079)",
+     3490
+    ],
+    [
+     9194,
+     "scale(0.98)",
+     3490
+    ]
+   ],
+   "changes": 28,
+   "startMs": 23222,
+   "durationMs": 9194,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98754)",
+     2210
+    ],
+    [
+     2838,
+     "none",
+     2210
+    ],
+    [
+     8778,
+     "scale(0.999427)",
+     3490
+    ],
+    [
+     8794,
+     "scale(0.99809)",
+     3490
+    ],
+    [
+     8811,
+     "scale(0.996676)",
+     3490
+    ],
+    [
+     8827,
+     "scale(0.995339)",
+     3490
+    ],
+    [
+     8845,
+     "scale(0.993951)",
+     3490
+    ],
+    [
+     8865,
+     "scale(0.992383)",
+     3490
+    ],
+    [
+     8881,
+     "scale(0.991182)",
+     3490
+    ],
+    [
+     8910,
+     "scale(0.989114)",
+     3490
+    ],
+    [
+     8941,
+     "scale(0.9873)",
+     3490
+    ],
+    [
+     8970,
+     "scale(0.98623)",
+     3490
+    ],
+    [
+     8984,
+     "scale(0.985221)",
+     3490
+    ],
+    [
+     8995,
+     "scale(0.984619)",
+     3490
+    ],
+    [
+     9011,
+     "scale(0.98402)",
+     3490
+    ],
+    [
+     9027,
+     "scale(0.983404)",
+     3490
+    ],
+    [
+     9044,
+     "scale(0.98286)",
+     3490
+    ],
+    [
+     9061,
+     "scale(0.982391)",
+     3490
+    ],
+    [
+     9077,
+     "scale(0.981957)",
+     3490
+    ],
+    [
+     9094,
+     "scale(0.981572)",
+     3490
+    ],
+    [
+     9113,
+     "scale(0.981211)",
+     3490
+    ],
+    [
+     9128,
+     "scale(0.980938)",
+     3490
+    ],
+    [
+     9145,
+     "scale(0.980699)",
+     3490
+    ],
+    [
+     9162,
+     "scale(0.980496)",
+     3490
+    ],
+    [
+     9177,
+     "scale(0.980316)",
+     3490
+    ],
+    [
+     9194,
+     "scale(0.980169)",
+     3490
+    ],
+    [
+     9211,
+     "scale(0.980053)",
+     3490
+    ],
+    [
+     9227,
+     "scale(0.98)",
+     3490
+    ]
+   ],
+   "changes": 28,
+   "startMs": 23222,
+   "durationMs": 9227,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.982651)",
+     2210
+    ],
+    [
+     2838,
+     "none",
+     2210
+    ],
+    [
+     8845,
+     "scale(0.998927)",
+     3490
+    ],
+    [
+     8865,
+     "scale(0.997254)",
+     3490
+    ],
+    [
+     8881,
+     "scale(0.995926)",
+     3490
+    ],
+    [
+     8910,
+     "scale(0.993481)",
+     3490
+    ],
+    [
+     8941,
+     "scale(0.991182)",
+     3490
+    ],
+    [
+     8970,
+     "scale(0.989782)",
+     3490
+    ],
+    [
+     8984,
+     "scale(0.988415)",
+     3490
+    ],
+    [
+     8995,
+     "scale(0.987588)",
+     3490
+    ],
+    [
+     9011,
+     "scale(0.986747)",
+     3490
+    ],
+    [
+     9027,
+     "scale(0.985879)",
+     3490
+    ],
+    [
+     9044,
+     "scale(0.985085)",
+     3490
+    ],
+    [
+     9061,
+     "scale(0.984407)",
+     3490
+    ],
+    [
+     9077,
+     "scale(0.983758)",
+     3490
+    ],
+    [
+     9094,
+     "scale(0.983175)",
+     3490
+    ],
+    [
+     9113,
+     "scale(0.982618)",
+     3490
+    ],
+    [
+     9128,
+     "scale(0.98218)",
+     3490
+    ],
+    [
+     9145,
+     "scale(0.981788)",
+     3490
+    ],
+    [
+     9162,
+     "scale(0.981447)",
+     3490
+    ],
+    [
+     9177,
+     "scale(0.981126)",
+     3490
+    ],
+    [
+     9194,
+     "scale(0.980843)",
+     3490
+    ],
+    [
+     9211,
+     "scale(0.980606)",
+     3490
+    ],
+    [
+     9227,
+     "scale(0.980418)",
+     3490
+    ],
+    [
+     9244,
+     "scale(0.980251)",
+     3490
+    ],
+    [
+     9261,
+     "scale(0.980123)",
+     3490
+    ],
+    [
+     9277,
+     "scale(0.980021)",
+     3490
+    ]
+   ],
+   "changes": 27,
+   "startMs": 23222,
+   "durationMs": 9277,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980088)",
+     3490
+    ],
+    [
+     14,
+     "scale(0.981316)",
+     3490
+    ],
+    [
+     26,
+     "scale(0.982328)",
+     3490
+    ],
+    [
+     42,
+     "scale(0.98374)",
+     3490
+    ],
+    [
+     59,
+     "scale(0.985153)",
+     3490
+    ],
+    [
+     76,
+     "scale(0.986519)",
+     3490
+    ],
+    [
+     93,
+     "scale(0.98777)",
+     3490
+    ],
+    [
+     109,
+     "scale(0.988956)",
+     3490
+    ],
+    [
+     126,
+     "scale(0.990218)",
+     3490
+    ],
+    [
+     142,
+     "scale(0.991272)",
+     3490
+    ],
+    [
+     160,
+     "scale(0.992244)",
+     3490
+    ],
+    [
+     180,
+     "scale(0.993413)",
+     3490
+    ],
+    [
+     196,
+     "scale(0.994172)",
+     3490
+    ],
+    [
+     225,
+     "scale(0.995511)",
+     3490
+    ],
+    [
+     256,
+     "scale(0.996662)",
+     3490
+    ],
+    [
+     285,
+     "scale(0.997262)",
+     3490
+    ],
+    [
+     299,
+     "scale(0.997868)",
+     3490
+    ],
+    [
+     310,
+     "scale(0.998186)",
+     3490
+    ],
+    [
+     326,
+     "scale(0.998535)",
+     3490
+    ],
+    [
+     342,
+     "scale(0.998858)",
+     3490
+    ],
+    [
+     359,
+     "scale(0.999124)",
+     3490
+    ],
+    [
+     376,
+     "scale(0.999365)",
+     3490
+    ],
+    [
+     392,
+     "scale(0.99956)",
+     3490
+    ],
+    [
+     409,
+     "scale(0.999731)",
+     3490
+    ],
+    [
+     428,
+     "scale(0.999882)",
+     3490
+    ],
+    [
+     443,
+     "scale(0.999979)",
+     3490
+    ],
+    [
+     460,
+     "none",
+     3490
+    ]
+   ],
+   "changes": 27,
+   "startMs": 31907,
+   "durationMs": 460,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980168)",
+     2210
+    ],
+    [
+     2838,
+     "none",
+     2210
+    ],
+    [
+     8865,
+     "scale(0.999751)",
+     3490
+    ],
+    [
+     8881,
+     "scale(0.998428)",
+     3490
+    ],
+    [
+     8910,
+     "scale(0.995926)",
+     3490
+    ],
+    [
+     8941,
+     "scale(0.993481)",
+     3490
+    ],
+    [
+     8970,
+     "scale(0.991924)",
+     3490
+    ],
+    [
+     8984,
+     "scale(0.990402)",
+     3490
+    ],
+    [
+     8995,
+     "scale(0.989447)",
+     3490
+    ],
+    [
+     9011,
+     "scale(0.988484)",
+     3490
+    ],
+    [
+     9027,
+     "scale(0.987466)",
+     3490
+    ],
+    [
+     9044,
+     "scale(0.986534)",
+     3490
+    ],
+    [
+     9061,
+     "scale(0.985737)",
+     3490
+    ],
+    [
+     9077,
+     "scale(0.984959)",
+     3490
+    ],
+    [
+     9094,
+     "scale(0.984252)",
+     3490
+    ],
+    [
+     9113,
+     "scale(0.983579)",
+     3490
+    ],
+    [
+     9128,
+     "scale(0.983048)",
+     3490
+    ],
+    [
+     9145,
+     "scale(0.982558)",
+     3490
+    ],
+    [
+     9162,
+     "scale(0.982132)",
+     3490
+    ],
+    [
+     9177,
+     "scale(0.981725)",
+     3490
+    ],
+    [
+     9194,
+     "scale(0.981367)",
+     3490
+    ],
+    [
+     9211,
+     "scale(0.981053)",
+     3490
+    ],
+    [
+     9227,
+     "scale(0.980801)",
+     3490
+    ],
+    [
+     9244,
+     "scale(0.98057)",
+     3490
+    ],
+    [
+     9261,
+     "scale(0.980387)",
+     3490
+    ],
+    [
+     9277,
+     "scale(0.980225)",
+     3490
+    ]
+   ],
+   "changes": 26,
+   "startMs": 23222,
+   "durationMs": 9277,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.981235)",
+     3490
+    ],
+    [
+     17,
+     "scale(0.982651)",
+     3490
+    ],
+    [
+     34,
+     "scale(0.984074)",
+     3490
+    ],
+    [
+     51,
+     "scale(0.985391)",
+     3490
+    ],
+    [
+     67,
+     "scale(0.986688)",
+     3490
+    ],
+    [
+     84,
+     "scale(0.988076)",
+     3490
+    ],
+    [
+     100,
+     "scale(0.989241)",
+     3490
+    ],
+    [
+     118,
+     "scale(0.99035)",
+     3490
+    ],
+    [
+     138,
+     "scale(0.9917)",
+     3490
+    ],
+    [
+     154,
+     "scale(0.99259)",
+     3490
+    ],
+    [
+     183,
+     "scale(0.994172)",
+     3490
+    ],
+    [
+     214,
+     "scale(0.995547)",
+     3490
+    ],
+    [
+     243,
+     "scale(0.996276)",
+     3490
+    ],
+    [
+     257,
+     "scale(0.997023)",
+     3490
+    ],
+    [
+     268,
+     "scale(0.997412)",
+     3490
+    ],
+    [
+     284,
+     "scale(0.997841)",
+     3490
+    ],
+    [
+     300,
+     "scale(0.998256)",
+     3490
+    ],
+    [
+     317,
+     "scale(0.998593)",
+     3490
+    ],
+    [
+     334,
+     "scale(0.998911)",
+     3490
+    ],
+    [
+     350,
+     "scale(0.999171)",
+     3490
+    ],
+    [
+     367,
+     "scale(0.999406)",
+     3490
+    ],
+    [
+     386,
+     "scale(0.999624)",
+     3490
+    ],
+    [
+     401,
+     "scale(0.999775)",
+     3490
+    ],
+    [
+     418,
+     "scale(0.999889)",
+     3490
+    ],
+    [
+     435,
+     "scale(0.99999)",
+     3490
+    ],
+    [
+     450,
+     "none",
+     3490
+    ]
+   ],
+   "changes": 26,
+   "startMs": 31949,
+   "durationMs": 450,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980168)",
+     3490
+    ],
+    [
+     17,
+     "scale(0.981572)",
+     3490
+    ],
+    [
+     34,
+     "scale(0.982907)",
+     3490
+    ],
+    [
+     50,
+     "scale(0.984248)",
+     3490
+    ],
+    [
+     67,
+     "scale(0.98572)",
+     3490
+    ],
+    [
+     83,
+     "scale(0.986999)",
+     3490
+    ],
+    [
+     101,
+     "scale(0.988228)",
+     3490
+    ],
+    [
+     121,
+     "scale(0.989745)",
+     3490
+    ],
+    [
+     137,
+     "scale(0.990755)",
+     3490
+    ],
+    [
+     166,
+     "scale(0.99259)",
+     3490
+    ],
+    [
+     197,
+     "scale(0.994222)",
+     3490
+    ],
+    [
+     226,
+     "scale(0.995088)",
+     3490
+    ],
+    [
+     240,
+     "scale(0.99598)",
+     3490
+    ],
+    [
+     251,
+     "scale(0.996454)",
+     3490
+    ],
+    [
+     267,
+     "scale(0.996992)",
+     3490
+    ],
+    [
+     283,
+     "scale(0.997493)",
+     3490
+    ],
+    [
+     300,
+     "scale(0.997923)",
+     3490
+    ],
+    [
+     317,
+     "scale(0.998318)",
+     3490
+    ],
+    [
+     333,
+     "scale(0.998656)",
+     3490
+    ],
+    [
+     350,
+     "scale(0.998962)",
+     3490
+    ],
+    [
+     369,
+     "scale(0.999257)",
+     3490
+    ],
+    [
+     384,
+     "scale(0.999466)",
+     3490
+    ],
+    [
+     401,
+     "scale(0.999634)",
+     3490
+    ],
+    [
+     418,
+     "scale(0.999792)",
+     3490
+    ],
+    [
+     433,
+     "scale(0.999917)",
+     3490
+    ],
+    [
+     450,
+     "none",
+     3490
+    ]
+   ],
+   "changes": 26,
+   "startMs": 31966,
+   "durationMs": 450,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980411)",
+     3490
+    ],
+    [
+     16,
+     "scale(0.981734)",
+     3490
+    ],
+    [
+     33,
+     "scale(0.983243)",
+     3490
+    ],
+    [
+     49,
+     "scale(0.984581)",
+     3490
+    ],
+    [
+     67,
+     "scale(0.985878)",
+     3490
+    ],
+    [
+     87,
+     "scale(0.98754)",
+     3490
+    ],
+    [
+     103,
+     "scale(0.988668)",
+     3490
+    ],
+    [
+     132,
+     "scale(0.990755)",
+     3490
+    ],
+    [
+     163,
+     "scale(0.992645)",
+     3490
+    ],
+    [
+     192,
+     "scale(0.993666)",
+     3490
+    ],
+    [
+     206,
+     "scale(0.994731)",
+     3490
+    ],
+    [
+     217,
+     "scale(0.995306)",
+     3490
+    ],
+    [
+     233,
+     "scale(0.995945)",
+     3490
+    ],
+    [
+     249,
+     "scale(0.996563)",
+     3490
+    ],
+    [
+     266,
+     "scale(0.997078)",
+     3490
+    ],
+    [
+     283,
+     "scale(0.99758)",
+     3490
+    ],
+    [
+     299,
+     "scale(0.997997)",
+     3490
+    ],
+    [
+     316,
+     "scale(0.998386)",
+     3490
+    ],
+    [
+     335,
+     "scale(0.998767)",
+     3490
+    ],
+    [
+     350,
+     "scale(0.999047)",
+     3490
+    ],
+    [
+     367,
+     "scale(0.999271)",
+     3490
+    ],
+    [
+     384,
+     "scale(0.999493)",
+     3490
+    ],
+    [
+     399,
+     "scale(0.999674)",
+     3490
+    ],
+    [
+     416,
+     "scale(0.999815)",
+     3490
+    ],
+    [
+     433,
+     "scale(0.999934)",
+     3490
+    ],
+    [
+     449,
+     "none",
+     3490
+    ]
+   ],
+   "changes": 26,
+   "startMs": 32000,
+   "durationMs": 449,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(1)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980735)",
+     3490
+    ],
+    [
+     16,
+     "scale(0.982072)",
+     3490
+    ],
+    [
+     34,
+     "scale(0.983405)",
+     3490
+    ],
+    [
+     54,
+     "scale(0.985153)",
+     3490
+    ],
+    [
+     70,
+     "scale(0.986363)",
+     3490
+    ],
+    [
+     99,
+     "scale(0.988668)",
+     3490
+    ],
+    [
+     130,
+     "scale(0.990815)",
+     3490
+    ],
+    [
+     159,
+     "scale(0.992008)",
+     3490
+    ],
+    [
+     173,
+     "scale(0.993253)",
+     3490
+    ],
+    [
+     184,
+     "scale(0.993926)",
+     3490
+    ],
+    [
+     200,
+     "scale(0.994691)",
+     3490
+    ],
+    [
+     216,
+     "scale(0.995427)",
+     3490
+    ],
+    [
+     233,
+     "scale(0.996059)",
+     3490
+    ],
+    [
+     250,
+     "scale(0.996662)",
+     3490
+    ],
+    [
+     266,
+     "scale(0.997171)",
+     3490
+    ],
+    [
+     283,
+     "scale(0.997659)",
+     3490
+    ],
+    [
+     302,
+     "scale(0.998141)",
+     3490
+    ],
+    [
+     317,
+     "scale(0.998494)",
+     3490
+    ],
+    [
+     334,
+     "scale(0.998789)",
+     3490
+    ],
+    [
+     351,
+     "scale(0.999076)",
+     3490
+    ],
+    [
+     366,
+     "scale(0.999327)",
+     3490
+    ],
+    [
+     383,
+     "scale(0.999527)",
+     3490
+    ],
+    [
+     400,
+     "scale(0.999703)",
+     3490
+    ],
+    [
+     416,
+     "scale(0.999847)",
+     3490
+    ],
+    [
+     433,
+     "scale(0.999951)",
+     3490
+    ],
+    [
+     450,
+     "none",
+     3490
+    ]
+   ],
+   "changes": 26,
+   "startMs": 32033,
+   "durationMs": 450,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980911)",
+     3490
+    ],
+    [
+     20,
+     "scale(0.982651)",
+     3490
+    ],
+    [
+     36,
+     "scale(0.983914)",
+     3490
+    ],
+    [
+     65,
+     "scale(0.986363)",
+     3490
+    ],
+    [
+     96,
+     "scale(0.988743)",
+     3490
+    ],
+    [
+     125,
+     "scale(0.990085)",
+     3490
+    ],
+    [
+     139,
+     "scale(0.991516)",
+     3490
+    ],
+    [
+     150,
+     "scale(0.9923)",
+     3490
+    ],
+    [
+     166,
+     "scale(0.9932)",
+     3490
+    ],
+    [
+     182,
+     "scale(0.99407)",
+     3490
+    ],
+    [
+     199,
+     "scale(0.994818)",
+     3490
+    ],
+    [
+     216,
+     "scale(0.995547)",
+     3490
+    ],
+    [
+     232,
+     "scale(0.996173)",
+     3490
+    ],
+    [
+     249,
+     "scale(0.99676)",
+     3490
+    ],
+    [
+     268,
+     "scale(0.997353)",
+     3490
+    ],
+    [
+     283,
+     "scale(0.997792)",
+     3490
+    ],
+    [
+     300,
+     "scale(0.99816)",
+     3490
+    ],
+    [
+     317,
+     "scale(0.998535)",
+     3490
+    ],
+    [
+     332,
+     "scale(0.998858)",
+     3490
+    ],
+    [
+     349,
+     "scale(0.999124)",
+     3490
+    ],
+    [
+     366,
+     "scale(0.999365)",
+     3490
+    ],
+    [
+     382,
+     "scale(0.999571)",
+     3490
+    ],
+    [
+     399,
+     "scale(0.999731)",
+     3490
+    ],
+    [
+     416,
+     "scale(0.999869)",
+     3490
+    ],
+    [
+     432,
+     "scale(0.999975)",
+     3490
+    ]
+   ],
+   "changes": 25,
+   "startMs": 32067,
+   "durationMs": 432,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98)",
+     2210
+    ],
+    [
+     0,
+     "none",
+     2210
+    ],
+    [
+     6072,
+     "scale(0.998428)",
+     3490
+    ],
+    [
+     6103,
+     "scale(0.995926)",
+     3490
+    ],
+    [
+     6132,
+     "scale(0.99428)",
+     3490
+    ],
+    [
+     6146,
+     "scale(0.992614)",
+     3490
+    ],
+    [
+     6157,
+     "scale(0.991558)",
+     3490
+    ],
+    [
+     6173,
+     "scale(0.990476)",
+     3490
+    ],
+    [
+     6189,
+     "scale(0.989316)",
+     3490
+    ],
+    [
+     6206,
+     "scale(0.988231)",
+     3490
+    ],
+    [
+     6223,
+     "scale(0.9873)",
+     3490
+    ],
+    [
+     6239,
+     "scale(0.986386)",
+     3490
+    ],
+    [
+     6256,
+     "scale(0.985546)",
+     3490
+    ],
+    [
+     6275,
+     "scale(0.984741)",
+     3490
+    ],
+    [
+     6290,
+     "scale(0.984091)",
+     3490
+    ],
+    [
+     6307,
+     "scale(0.983512)",
+     3490
+    ],
+    [
+     6324,
+     "scale(0.982977)",
+     3490
+    ],
+    [
+     6339,
+     "scale(0.982478)",
+     3490
+    ],
+    [
+     6356,
+     "scale(0.98203)",
+     3490
+    ],
+    [
+     6373,
+     "scale(0.981632)",
+     3490
+    ],
+    [
+     6389,
+     "scale(0.98131)",
+     3490
+    ],
+    [
+     6406,
+     "scale(0.981003)",
+     3490
+    ],
+    [
+     6423,
+     "scale(0.980756)",
+     3490
+    ],
+    [
+     6439,
+     "scale(0.980534)",
+     3490
+    ]
+   ],
+   "changes": 24,
+   "startMs": 26060,
+   "durationMs": 6439,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980168)",
+     3490
+    ],
+    [
+     16,
+     "scale(0.98141)",
+     3490
+    ],
+    [
+     45,
+     "scale(0.983914)",
+     3490
+    ],
+    [
+     76,
+     "scale(0.986441)",
+     3490
+    ],
+    [
+     105,
+     "scale(0.987923)",
+     3490
+    ],
+    [
+     119,
+     "scale(0.989524)",
+     3490
+    ],
+    [
+     130,
+     "scale(0.990422)",
+     3490
+    ],
+    [
+     146,
+     "scale(0.991458)",
+     3490
+    ],
+    [
+     162,
+     "scale(0.992479)",
+     3490
+    ],
+    [
+     179,
+     "scale(0.99336)",
+     3490
+    ],
+    [
+     196,
+     "scale(0.994222)",
+     3490
+    ],
+    [
+     212,
+     "scale(0.994954)",
+     3490
+    ],
+    [
+     229,
+     "scale(0.995666)",
+     3490
+    ],
+    [
+     248,
+     "scale(0.996387)",
+     3490
+    ],
+    [
+     263,
+     "scale(0.996921)",
+     3490
+    ],
+    [
+     280,
+     "scale(0.997382)",
+     3490
+    ],
+    [
+     297,
+     "scale(0.997841)",
+     3490
+    ],
+    [
+     312,
+     "scale(0.998256)",
+     3490
+    ],
+    [
+     329,
+     "scale(0.998593)",
+     3490
+    ],
+    [
+     346,
+     "scale(0.998911)",
+     3490
+    ],
+    [
+     362,
+     "scale(0.999185)",
+     3490
+    ],
+    [
+     379,
+     "scale(0.999406)",
+     3490
+    ],
+    [
+     396,
+     "scale(0.999603)",
+     3490
+    ],
+    [
+     412,
+     "scale(0.999767)",
+     3490
+    ]
+   ],
+   "changes": 24,
+   "startMs": 32087,
+   "durationMs": 412,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98)",
+     2210
+    ],
+    [
+     0,
+     "none",
+     2210
+    ],
+    [
+     6103,
+     "scale(0.998428)",
+     3490
+    ],
+    [
+     6132,
+     "scale(0.996757)",
+     3490
+    ],
+    [
+     6146,
+     "scale(0.995006)",
+     3490
+    ],
+    [
+     6157,
+     "scale(0.993873)",
+     3490
+    ],
+    [
+     6173,
+     "scale(0.992691)",
+     3490
+    ],
+    [
+     6189,
+     "scale(0.991407)",
+     3490
+    ],
+    [
+     6206,
+     "scale(0.990194)",
+     3490
+    ],
+    [
+     6223,
+     "scale(0.989114)",
+     3490
+    ],
+    [
+     6239,
+     "scale(0.98806)",
+     3490
+    ],
+    [
+     6256,
+     "scale(0.987071)",
+     3490
+    ],
+    [
+     6275,
+     "scale(0.986126)",
+     3490
+    ],
+    [
+     6290,
+     "scale(0.985358)",
+     3490
+    ],
+    [
+     6307,
+     "scale(0.984657)",
+     3490
+    ],
+    [
+     6324,
+     "scale(0.98402)",
+     3490
+    ],
+    [
+     6339,
+     "scale(0.983404)",
+     3490
+    ],
+    [
+     6356,
+     "scale(0.98286)",
+     3490
+    ],
+    [
+     6373,
+     "scale(0.98237)",
+     3490
+    ],
+    [
+     6389,
+     "scale(0.981957)",
+     3490
+    ],
+    [
+     6406,
+     "scale(0.981572)",
+     3490
+    ],
+    [
+     6423,
+     "scale(0.981249)",
+     3490
+    ],
+    [
+     6439,
+     "scale(0.980953)",
+     3490
+    ]
+   ],
+   "changes": 23,
+   "startMs": 26060,
+   "durationMs": 6439,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98)",
+     2210
+    ],
+    [
+     0,
+     "none",
+     2210
+    ],
+    [
+     6132,
+     "scale(0.999265)",
+     3490
+    ],
+    [
+     6146,
+     "scale(0.99751)",
+     3490
+    ],
+    [
+     6157,
+     "scale(0.996341)",
+     3490
+    ],
+    [
+     6173,
+     "scale(0.995099)",
+     3490
+    ],
+    [
+     6189,
+     "scale(0.993716)",
+     3490
+    ],
+    [
+     6206,
+     "scale(0.992383)",
+     3490
+    ],
+    [
+     6223,
+     "scale(0.991182)",
+     3490
+    ],
+    [
+     6239,
+     "scale(0.989988)",
+     3490
+    ],
+    [
+     6256,
+     "scale(0.988856)",
+     3490
+    ],
+    [
+     6275,
+     "scale(0.987756)",
+     3490
+    ],
+    [
+     6290,
+     "scale(0.986854)",
+     3490
+    ],
+    [
+     6307,
+     "scale(0.986023)",
+     3490
+    ],
+    [
+     6324,
+     "scale(0.985269)",
+     3490
+    ],
+    [
+     6339,
+     "scale(0.984536)",
+     3490
+    ],
+    [
+     6356,
+     "scale(0.983871)",
+     3490
+    ],
+    [
+     6373,
+     "scale(0.983272)",
+     3490
+    ],
+    [
+     6389,
+     "scale(0.982768)",
+     3490
+    ],
+    [
+     6406,
+     "scale(0.982284)",
+     3490
+    ],
+    [
+     6423,
+     "scale(0.981885)",
+     3490
+    ],
+    [
+     6439,
+     "scale(0.981506)",
+     3490
+    ]
+   ],
+   "changes": 22,
+   "startMs": 26060,
+   "durationMs": 6439,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98141)",
+     3490
+    ],
+    [
+     31,
+     "scale(0.983994)",
+     3490
+    ],
+    [
+     60,
+     "scale(0.985562)",
+     3490
+    ],
+    [
+     74,
+     "scale(0.987309)",
+     3490
+    ],
+    [
+     85,
+     "scale(0.988303)",
+     3490
+    ],
+    [
+     101,
+     "scale(0.989463)",
+     3490
+    ],
+    [
+     117,
+     "scale(0.990625)",
+     3490
+    ],
+    [
+     134,
+     "scale(0.991643)",
+     3490
+    ],
+    [
+     151,
+     "scale(0.992645)",
+     3490
+    ],
+    [
+     167,
+     "scale(0.993519)",
+     3490
+    ],
+    [
+     184,
+     "scale(0.994364)",
+     3490
+    ],
+    [
+     203,
+     "scale(0.995221)",
+     3490
+    ],
+    [
+     218,
+     "scale(0.995865)",
+     3490
+    ],
+    [
+     235,
+     "scale(0.996421)",
+     3490
+    ],
+    [
+     252,
+     "scale(0.996992)",
+     3490
+    ],
+    [
+     267,
+     "scale(0.997493)",
+     3490
+    ],
+    [
+     284,
+     "scale(0.997923)",
+     3490
+    ],
+    [
+     301,
+     "scale(0.998318)",
+     3490
+    ],
+    [
+     317,
+     "scale(0.998673)",
+     3490
+    ],
+    [
+     334,
+     "scale(0.998962)",
+     3490
+    ],
+    [
+     351,
+     "scale(0.999231)",
+     3490
+    ],
+    [
+     367,
+     "scale(0.999454)",
+     3490
+    ]
+   ],
+   "changes": 22,
+   "startMs": 32132,
+   "durationMs": 367,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98)",
+     2210
+    ],
+    [
+     0,
+     "none",
+     2210
+    ],
+    [
+     6146,
+     "scale(0.999993)",
+     3490
+    ],
+    [
+     6157,
+     "scale(0.998846)",
+     3490
+    ],
+    [
+     6173,
+     "scale(0.997591)",
+     3490
+    ],
+    [
+     6189,
+     "scale(0.996166)",
+     3490
+    ],
+    [
+     6206,
+     "scale(0.994768)",
+     3490
+    ],
+    [
+     6223,
+     "scale(0.993481)",
+     3490
+    ],
+    [
+     6239,
+     "scale(0.992153)",
+     3490
+    ],
+    [
+     6256,
+     "scale(0.990895)",
+     3490
+    ],
+    [
+     6275,
+     "scale(0.98965)",
+     3490
+    ],
+    [
+     6290,
+     "scale(0.988611)",
+     3490
+    ],
+    [
+     6307,
+     "scale(0.987644)",
+     3490
+    ],
+    [
+     6324,
+     "scale(0.986747)",
+     3490
+    ],
+    [
+     6339,
+     "scale(0.985879)",
+     3490
+    ],
+    [
+     6356,
+     "scale(0.985085)",
+     3490
+    ],
+    [
+     6373,
+     "scale(0.98437)",
+     3490
+    ],
+    [
+     6389,
+     "scale(0.983758)",
+     3490
+    ],
+    [
+     6406,
+     "scale(0.983175)",
+     3490
+    ],
+    [
+     6423,
+     "scale(0.982677)",
+     3490
+    ],
+    [
+     6439,
+     "scale(0.982208)",
+     3490
+    ]
+   ],
+   "changes": 21,
+   "startMs": 26060,
+   "durationMs": 6439,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.981491)",
+     3490
+    ],
+    [
+     29,
+     "scale(0.983082)",
+     3490
+    ],
+    [
+     43,
+     "scale(0.984901)",
+     3490
+    ],
+    [
+     54,
+     "scale(0.98597)",
+     3490
+    ],
+    [
+     70,
+     "scale(0.987232)",
+     3490
+    ],
+    [
+     86,
+     "scale(0.988518)",
+     3490
+    ],
+    [
+     103,
+     "scale(0.989671)",
+     3490
+    ],
+    [
+     120,
+     "scale(0.990815)",
+     3490
+    ],
+    [
+     136,
+     "scale(0.991826)",
+     3490
+    ],
+    [
+     153,
+     "scale(0.992809)",
+     3490
+    ],
+    [
+     172,
+     "scale(0.993822)",
+     3490
+    ],
+    [
+     187,
+     "scale(0.994593)",
+     3490
+    ],
+    [
+     204,
+     "scale(0.995259)",
+     3490
+    ],
+    [
+     221,
+     "scale(0.995945)",
+     3490
+    ],
+    [
+     236,
+     "scale(0.996563)",
+     3490
+    ],
+    [
+     253,
+     "scale(0.997078)",
+     3490
+    ],
+    [
+     270,
+     "scale(0.99758)",
+     3490
+    ],
+    [
+     286,
+     "scale(0.998016)",
+     3490
+    ],
+    [
+     303,
+     "scale(0.998386)",
+     3490
+    ],
+    [
+     320,
+     "scale(0.998729)",
+     3490
+    ],
+    [
+     336,
+     "scale(0.999027)",
+     3490
+    ]
+   ],
+   "changes": 21,
+   "startMs": 32163,
+   "durationMs": 336,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(2)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980573)",
+     3490
+    ],
+    [
+     14,
+     "scale(0.982409)",
+     3490
+    ],
+    [
+     25,
+     "scale(0.983499)",
+     3490
+    ],
+    [
+     41,
+     "scale(0.984821)",
+     3490
+    ],
+    [
+     57,
+     "scale(0.986206)",
+     3490
+    ],
+    [
+     74,
+     "scale(0.987463)",
+     3490
+    ],
+    [
+     91,
+     "scale(0.988743)",
+     3490
+    ],
+    [
+     107,
+     "scale(0.989879)",
+     3490
+    ],
+    [
+     124,
+     "scale(0.991015)",
+     3490
+    ],
+    [
+     143,
+     "scale(0.992188)",
+     3490
+    ],
+    [
+     158,
+     "scale(0.993092)",
+     3490
+    ],
+    [
+     175,
+     "scale(0.993874)",
+     3490
+    ],
+    [
+     192,
+     "scale(0.994691)",
+     3490
+    ],
+    [
+     207,
+     "scale(0.995427)",
+     3490
+    ],
+    [
+     224,
+     "scale(0.996059)",
+     3490
+    ],
+    [
+     241,
+     "scale(0.996662)",
+     3490
+    ],
+    [
+     257,
+     "scale(0.997201)",
+     3490
+    ],
+    [
+     274,
+     "scale(0.997659)",
+     3490
+    ],
+    [
+     291,
+     "scale(0.998089)",
+     3490
+    ],
+    [
+     307,
+     "scale(0.99847)",
+     3490
+    ]
+   ],
+   "changes": 20,
+   "startMs": 32192,
+   "durationMs": 307,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98)",
+     2210
+    ],
+    [
+     0,
+     "none",
+     2210
+    ],
+    [
+     6189,
+     "scale(0.998684)",
+     3490
+    ],
+    [
+     6206,
+     "scale(0.997254)",
+     3490
+    ],
+    [
+     6223,
+     "scale(0.995926)",
+     3490
+    ],
+    [
+     6239,
+     "scale(0.994517)",
+     3490
+    ],
+    [
+     6256,
+     "scale(0.993156)",
+     3490
+    ],
+    [
+     6275,
+     "scale(0.991772)",
+     3490
+    ],
+    [
+     6290,
+     "scale(0.990611)",
+     3490
+    ],
+    [
+     6307,
+     "scale(0.989506)",
+     3490
+    ],
+    [
+     6324,
+     "scale(0.988484)",
+     3490
+    ],
+    [
+     6339,
+     "scale(0.987466)",
+     3490
+    ],
+    [
+     6356,
+     "scale(0.986534)",
+     3490
+    ],
+    [
+     6373,
+     "scale(0.985687)",
+     3490
+    ],
+    [
+     6389,
+     "scale(0.984959)",
+     3490
+    ],
+    [
+     6406,
+     "scale(0.984252)",
+     3490
+    ],
+    [
+     6423,
+     "scale(0.983647)",
+     3490
+    ],
+    [
+     6439,
+     "scale(0.983079)",
+     3490
+    ]
+   ],
+   "changes": 18,
+   "startMs": 26060,
+   "durationMs": 6439,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(1) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980992)",
+     3490
+    ],
+    [
+     16,
+     "scale(0.982328)",
+     3490
+    ],
+    [
+     32,
+     "scale(0.98374)",
+     3490
+    ],
+    [
+     49,
+     "scale(0.985073)",
+     3490
+    ],
+    [
+     66,
+     "scale(0.986441)",
+     3490
+    ],
+    [
+     82,
+     "scale(0.987694)",
+     3490
+    ],
+    [
+     99,
+     "scale(0.988956)",
+     3490
+    ],
+    [
+     118,
+     "scale(0.99029)",
+     3490
+    ],
+    [
+     133,
+     "scale(0.991331)",
+     3490
+    ],
+    [
+     150,
+     "scale(0.992244)",
+     3490
+    ],
+    [
+     167,
+     "scale(0.9932)",
+     3490
+    ],
+    [
+     182,
+     "scale(0.99407)",
+     3490
+    ],
+    [
+     199,
+     "scale(0.994818)",
+     3490
+    ],
+    [
+     216,
+     "scale(0.995547)",
+     3490
+    ],
+    [
+     232,
+     "scale(0.996207)",
+     3490
+    ],
+    [
+     249,
+     "scale(0.99676)",
+     3490
+    ],
+    [
+     266,
+     "scale(0.997293)",
+     3490
+    ],
+    [
+     282,
+     "scale(0.997765)",
+     3490
+    ]
+   ],
+   "changes": 18,
+   "startMs": 32217,
+   "durationMs": 282,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98)",
+     2210
+    ],
+    [
+     0,
+     "none",
+     2210
+    ],
+    [
+     6206,
+     "scale(0.999751)",
+     3490
+    ],
+    [
+     6223,
+     "scale(0.998428)",
+     3490
+    ],
+    [
+     6239,
+     "scale(0.997012)",
+     3490
+    ],
+    [
+     6256,
+     "scale(0.995592)",
+     3490
+    ],
+    [
+     6275,
+     "scale(0.994122)",
+     3490
+    ],
+    [
+     6290,
+     "scale(0.992846)",
+     3490
+    ],
+    [
+     6307,
+     "scale(0.991633)",
+     3490
+    ],
+    [
+     6324,
+     "scale(0.990476)",
+     3490
+    ],
+    [
+     6339,
+     "scale(0.989316)",
+     3490
+    ],
+    [
+     6356,
+     "scale(0.988231)",
+     3490
+    ],
+    [
+     6373,
+     "scale(0.987245)",
+     3490
+    ],
+    [
+     6389,
+     "scale(0.986386)",
+     3490
+    ],
+    [
+     6406,
+     "scale(0.985546)",
+     3490
+    ],
+    [
+     6423,
+     "scale(0.984826)",
+     3490
+    ],
+    [
+     6439,
+     "scale(0.984135)",
+     3490
+    ]
+   ],
+   "changes": 17,
+   "startMs": 26060,
+   "durationMs": 6439,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(2) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.981235)",
+     3490
+    ],
+    [
+     17,
+     "scale(0.982571)",
+     3490
+    ],
+    [
+     34,
+     "scale(0.983994)",
+     3490
+    ],
+    [
+     50,
+     "scale(0.985311)",
+     3490
+    ],
+    [
+     67,
+     "scale(0.986688)",
+     3490
+    ],
+    [
+     86,
+     "scale(0.988152)",
+     3490
+    ],
+    [
+     101,
+     "scale(0.989315)",
+     3490
+    ],
+    [
+     118,
+     "scale(0.99035)",
+     3490
+    ],
+    [
+     135,
+     "scale(0.991458)",
+     3490
+    ],
+    [
+     150,
+     "scale(0.992479)",
+     3490
+    ],
+    [
+     167,
+     "scale(0.99336)",
+     3490
+    ],
+    [
+     184,
+     "scale(0.994222)",
+     3490
+    ],
+    [
+     200,
+     "scale(0.995002)",
+     3490
+    ],
+    [
+     217,
+     "scale(0.995666)",
+     3490
+    ],
+    [
+     234,
+     "scale(0.99631)",
+     3490
+    ],
+    [
+     250,
+     "scale(0.996889)",
+     3490
+    ]
+   ],
+   "changes": 16,
+   "startMs": 32249,
+   "durationMs": 250,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(1) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98)",
+     2210
+    ],
+    [
+     0,
+     "none",
+     2210
+    ],
+    [
+     6239,
+     "scale(0.999508)",
+     3490
+    ],
+    [
+     6256,
+     "scale(0.99809)",
+     3490
+    ],
+    [
+     6275,
+     "scale(0.996595)",
+     3490
+    ],
+    [
+     6290,
+     "scale(0.995259)",
+     3490
+    ],
+    [
+     6307,
+     "scale(0.993951)",
+     3490
+    ],
+    [
+     6324,
+     "scale(0.992691)",
+     3490
+    ],
+    [
+     6339,
+     "scale(0.991407)",
+     3490
+    ],
+    [
+     6356,
+     "scale(0.990194)",
+     3490
+    ],
+    [
+     6373,
+     "scale(0.989056)",
+     3490
+    ],
+    [
+     6389,
+     "scale(0.98806)",
+     3490
+    ],
+    [
+     6406,
+     "scale(0.987071)",
+     3490
+    ],
+    [
+     6423,
+     "scale(0.98623)",
+     3490
+    ],
+    [
+     6439,
+     "scale(0.985407)",
+     3490
+    ]
+   ],
+   "changes": 15,
+   "startMs": 26060,
+   "durationMs": 6439,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(3) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.980088)",
+     3490
+    ],
+    [
+     17,
+     "scale(0.981491)",
+     3490
+    ],
+    [
+     33,
+     "scale(0.982826)",
+     3490
+    ],
+    [
+     50,
+     "scale(0.984248)",
+     3490
+    ],
+    [
+     69,
+     "scale(0.985799)",
+     3490
+    ],
+    [
+     84,
+     "scale(0.987077)",
+     3490
+    ],
+    [
+     101,
+     "scale(0.988228)",
+     3490
+    ],
+    [
+     118,
+     "scale(0.989463)",
+     3490
+    ],
+    [
+     133,
+     "scale(0.990625)",
+     3490
+    ],
+    [
+     150,
+     "scale(0.991643)",
+     3490
+    ],
+    [
+     167,
+     "scale(0.992645)",
+     3490
+    ],
+    [
+     183,
+     "scale(0.993572)",
+     3490
+    ],
+    [
+     200,
+     "scale(0.994364)",
+     3490
+    ],
+    [
+     217,
+     "scale(0.995126)",
+     3490
+    ],
+    [
+     233,
+     "scale(0.995829)",
+     3490
+    ]
+   ],
+   "changes": 15,
+   "startMs": 32266,
+   "durationMs": 233,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(4) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98033)",
+     3490
+    ],
+    [
+     17,
+     "scale(0.981734)",
+     3490
+    ],
+    [
+     36,
+     "scale(0.983324)",
+     3490
+    ],
+    [
+     51,
+     "scale(0.984661)",
+     3490
+    ],
+    [
+     68,
+     "scale(0.985878)",
+     3490
+    ],
+    [
+     85,
+     "scale(0.987232)",
+     3490
+    ],
+    [
+     100,
+     "scale(0.988518)",
+     3490
+    ],
+    [
+     117,
+     "scale(0.989671)",
+     3490
+    ],
+    [
+     134,
+     "scale(0.990815)",
+     3490
+    ],
+    [
+     150,
+     "scale(0.991883)",
+     3490
+    ],
+    [
+     167,
+     "scale(0.992809)",
+     3490
+    ],
+    [
+     184,
+     "scale(0.993718)",
+     3490
+    ],
+    [
+     200,
+     "scale(0.994553)",
+     3490
+    ]
+   ],
+   "changes": 13,
+   "startMs": 32299,
+   "durationMs": 200,
+   "trigger": "load",
+   "section": 8
+  },
+  {
+   "path": "div.mx-auto > div.relative.overflow-hidden:nth-of-type(2) > div.grid.grid-cols-2:nth-of-type(2) > div.flex.flex-col:nth-of-type(5) > div:nth-of-type(3)",
+   "tag": "div",
+   "property": "transform",
+   "samples": [
+    [
+     0,
+     "scale(0.98083)",
+     3490
+    ],
+    [
+     15,
+     "scale(0.982153)",
+     3490
+    ],
+    [
+     32,
+     "scale(0.983405)",
+     3490
+    ],
+    [
+     49,
+     "scale(0.984821)",
+     3490
+    ],
+    [
+     64,
+     "scale(0.986206)",
+     3490
+    ],
+    [
+     81,
+     "scale(0.987463)",
+     3490
+    ],
+    [
+     98,
+     "scale(0.988743)",
+     3490
+    ],
+    [
+     114,
+     "scale(0.989952)",
+     3490
+    ],
+    [
+     131,
+     "scale(0.991015)",
+     3490
+    ],
+    [
+     148,
+     "scale(0.992064)",
+     3490
+    ],
+    [
+     164,
+     "scale(0.993038)",
+     3490
+    ]
+   ],
+   "changes": 11,
+   "startMs": 32335,
+   "durationMs": 164,
+   "trigger": "load",
+   "section": 8
+  }
+ ],
+ "classChanges": [],
+ "films": [
+  {
+   "file": "reference/motion/films/01-scripted-community.jpg",
+   "kind": "scripted",
+   "label": "Scripted div: 108 moving parts (transform)",
+   "section": "09-community",
+   "element": "main#main > section#community:nth-of-type(7) > div.border-b.border-border > div.mx-auto > div.relative.overflow-hidden:nth-of-type(2)",
+   "frameTimesMs": [
+    0,
+    3920,
+    4159,
+    4336,
+    4494,
+    4662,
+    4840,
+    5251,
+    6001
+   ]
+  },
+  {
+   "file": "reference/motion/films/02-loop-products.jpg",
+   "kind": "loop",
+   "label": "Loop: marquee-reverse",
+   "section": "03-products",
+   "element": "div.z-10.relative > span > figure.absolute.inset-0 > div.absolute.z-0 > div.relative.h-full:nth-of-type(1)",
+   "frameTimesMs": [
+    0,
+    1991,
+    2401,
+    3600,
+    4801,
+    6000
+   ]
+  },
+  {
+   "file": "reference/motion/films/03-loop-products.jpg",
+   "kind": "loop",
+   "label": "Loop: marquee-reverse",
+   "section": "03-products",
+   "element": "div.z-10.relative > span > figure.absolute.inset-0 > div.absolute.z-0 > div.relative.h-full:nth-of-type(2)",
+   "frameTimesMs": [
+    0,
+    1201,
+    2401,
+    3600,
+    4800,
+    6000
+   ]
+  }
+ ],
+ "states": [
+  {
+   "file": "reference/components/01-button.jpg",
+   "kind": "button",
+   "label": "button button.group.relative",
+   "section": "01-nav"
+  },
+  {
+   "file": "reference/components/02-button.jpg",
+   "kind": "button",
+   "label": "button button.group.relative",
+   "section": "01-nav"
+  },
+  {
+   "file": "reference/components/03-nav-link.jpg",
+   "kind": "nav-link",
+   "label": "nav-link a.flex.items-center",
+   "section": "01-nav"
+  }
+ ],
+ "lottie": []
+}

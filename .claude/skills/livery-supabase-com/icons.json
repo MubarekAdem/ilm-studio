@@ -1,0 +1,31 @@
+{
+  "library": {
+    "name": "Lucide",
+    "package": "lucide-react",
+    "licence": "free",
+    "licenceName": "ISC",
+    "alternative": null
+  },
+  "detectedBy": "class-names",
+  "iconsUsed": [
+    "chevron-down",
+    "menu",
+    "x",
+    "chevron-right",
+    "check",
+    "image",
+    "file",
+    "video",
+    "moon",
+    "sun"
+  ],
+  "style": {
+    "sizePx": 24,
+    "strokeWidth": 2,
+    "linecap": "round",
+    "filled": false,
+    "grid": "0 0 24 24",
+    "colour": "currentColor"
+  },
+  "customIcons": null
+}

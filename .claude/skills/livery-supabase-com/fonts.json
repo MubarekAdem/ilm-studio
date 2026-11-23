@@ -1,0 +1,24 @@
+[
+  {
+    "family": "Inter",
+    "roles": [
+      "body"
+    ],
+    "licence": "free",
+    "licenceName": "SIL Open Font License (Google Fonts)",
+    "install": "next/font/google (Inter) or npm i @fontsource-variable/inter",
+    "alternative": null,
+    "note": "Install from Google Fonts or Fontsource, never from the source site."
+  },
+  {
+    "family": "Manrope",
+    "roles": [
+      "display"
+    ],
+    "licence": "free",
+    "licenceName": "SIL Open Font License (Google Fonts)",
+    "install": "next/font/google (Manrope) or npm i @fontsource-variable/manrope",
+    "alternative": null,
+    "note": "Install from Google Fonts or Fontsource, never from the source site."
+  }
+]
