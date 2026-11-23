@@ -1,3 +1,4 @@
+import './shims/patchFramesync';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';

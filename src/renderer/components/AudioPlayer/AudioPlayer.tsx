@@ -1,3 +1,4 @@
+import '../../shims/patchFramesync';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Box,
