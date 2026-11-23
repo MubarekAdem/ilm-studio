@@ -10,6 +10,7 @@ import { TagManager } from './components/Tags/TagManager';
 import { ImportDialog } from './components/Library/ImportDialog';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useAppStore } from './stores/appStore';
+import { usePlayerStore } from './stores/playerStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 const App: React.FC = () => {
@@ -24,6 +25,40 @@ const App: React.FC = () => {
 
   // Activate all global keyboard shortcuts
   useKeyboardShortcuts();
+
+  // Auto-restore last played lecture and series on launch
+  useEffect(() => {
+    const lastLectureId = localStorage.getItem('ilm_last_played_lecture_id');
+    const lastSeriesId = localStorage.getItem('ilm_last_played_series_id');
+    const lastView = localStorage.getItem('ilm_last_view') as 'library' | 'study' | 'dashboard' | null;
+
+    if (lastView && ['library', 'study', 'dashboard'].includes(lastView)) {
+      useAppStore.getState().setView(lastView);
+    }
+
+    if (lastLectureId) {
+      window.api
+        .getLecture(lastLectureId)
+        .then((lec) => {
+          if (lec) {
+            if (lec.seriesId) {
+              useAppStore.getState().selectSeries(lec.seriesId);
+            }
+            useAppStore.getState().selectLecture(lec.id);
+            const savedPosStr = localStorage.getItem(`ilm_last_audio_pos_${lec.id}`);
+            const pos = savedPosStr ? parseFloat(savedPosStr) : lec.lastPosition || 0;
+            usePlayerStore.setState({
+              currentLecture: { ...lec, lastPosition: pos },
+              currentTime: pos,
+              isPlaying: false,
+            });
+          }
+        })
+        .catch(console.error);
+    } else if (lastSeriesId) {
+      useAppStore.getState().selectSeries(lastSeriesId);
+    }
+  }, []);
 
   return (
     <ErrorBoundary fallbackTitle="Application Error">

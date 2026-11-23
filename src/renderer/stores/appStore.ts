@@ -91,24 +91,49 @@ export const useAppStore = create<AppState>((set, get) => ({
   isLoadingLectures: false,
 
   // Actions
-  setView: (view) => set({ currentView: view }),
+  setView: (view) => {
+    try {
+      localStorage.setItem('ilm_last_view', view);
+    } catch {}
+    set({ currentView: view });
+  },
 
   selectSeries: (seriesId) => {
     set({ selectedSeriesId: seriesId });
+    if (seriesId) {
+      try {
+        localStorage.setItem('ilm_last_played_series_id', seriesId);
+      } catch {}
+    }
     get().loadLectures(seriesId || undefined).then(() => {
       const lecs = get().lecturesList;
       if (lecs.length > 0) {
+        // 1. Check if the currently selected lecture belongs to this series
         const curId = get().selectedLectureId;
         const existing = curId ? lecs.find((l) => l.id === curId) : null;
         if (existing) {
           get().selectLecture(existing.id);
-          usePlayerStore.setState({ currentLecture: existing });
           return;
         }
-        // Prefer a lecture that has audio, otherwise fall back to first lecture
+
+        // 2. Check if a last played lecture for this specific series was recorded
+        const lastSeriesLecId = seriesId ? localStorage.getItem(`ilm_last_played_lecture_${seriesId}`) : null;
+        const lastPlayedLec = lastSeriesLecId ? lecs.find((l) => l.id === lastSeriesLecId) : null;
+        if (lastPlayedLec) {
+          get().selectLecture(lastPlayedLec.id);
+          return;
+        }
+
+        // 3. Find in-progress lecture (partially listened: lastPosition > 0 and completionPct < 95)
+        const inProgressLec = lecs.find((l) => (l.lastPosition > 0 || l.completionPct > 0) && l.completionPct < 95);
+        if (inProgressLec) {
+          get().selectLecture(inProgressLec.id);
+          return;
+        }
+
+        // 4. Prefer a lecture that has audio, otherwise fall back to first lecture
         const bestLecture = lecs.find((l) => Boolean(l.audioPath)) || lecs[0];
         get().selectLecture(bestLecture.id);
-        usePlayerStore.setState({ currentLecture: bestLecture });
       } else {
         set({ selectedLectureId: null, currentLecture: null });
       }
@@ -118,13 +143,26 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectLecture: (lectureId) => {
     set({ selectedLectureId: lectureId });
     if (lectureId) {
+      try {
+        localStorage.setItem('ilm_last_played_lecture_id', lectureId);
+      } catch {}
       window.api.getLecture(lectureId).then((lec) => {
         if (lec) {
+          const savedPosStr = localStorage.getItem(`ilm_last_audio_pos_${lec.id}`);
+          const pos = savedPosStr ? parseFloat(savedPosStr) : (lec.lastPosition || 0);
+          const enrichedLec = { ...lec, lastPosition: pos };
           set((state) => ({
-            currentLecture: lec,
-            lectures: state.lectures.map((l) => (l.id === lec.id ? lec : l)),
-            lecturesList: state.lecturesList.map((l) => (l.id === lec.id ? lec : l)),
+            currentLecture: enrichedLec,
+            lectures: state.lectures.map((l) => (l.id === lec.id ? enrichedLec : l)),
+            lecturesList: state.lecturesList.map((l) => (l.id === lec.id ? enrichedLec : l)),
           }));
+          const curPlayerLec = usePlayerStore.getState().currentLecture;
+          if (!curPlayerLec || curPlayerLec.id !== lec.id) {
+            usePlayerStore.setState({
+              currentLecture: enrichedLec,
+              currentTime: pos,
+            });
+          }
         }
       }).catch(console.error);
     } else {

@@ -242,10 +242,19 @@ const StudyView: React.FC = () => {
     null;
 
   // Effective PDF path: use the selected lecture's pdfPath if present;
-  // otherwise, fall back to any textbook/PDF attached to this course series!
+  // otherwise, fall back to any textbook/PDF attached to this course series or last opened PDF!
   const seriesTextbookPdf =
     lecturesList.find((l) => Boolean(l.pdfPath))?.pdfPath || null;
-  const effectivePdfPath = lecture?.pdfPath || seriesTextbookPdf;
+  const fallbackLastPdf = typeof window !== 'undefined' ? localStorage.getItem('ilm_last_pdf_path') : null;
+  const effectivePdfPath = lecture?.pdfPath || seriesTextbookPdf || fallbackLastPdf;
+
+  useEffect(() => {
+    if (effectivePdfPath) {
+      try {
+        localStorage.setItem('ilm_last_pdf_path', effectivePdfPath);
+      } catch {}
+    }
+  }, [effectivePdfPath]);
   const splitterBg = useColorModeValue('gray.200', 'whiteAlpha.100');
   const splitterHoverBg = useColorModeValue('green.400', 'green.500');
   const emptyCardBg = useColorModeValue('white', '#16213e');

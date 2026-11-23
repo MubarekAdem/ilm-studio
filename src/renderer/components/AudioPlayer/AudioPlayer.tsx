@@ -79,6 +79,7 @@ export const AudioPlayer: React.FC = () => {
   const lastSaveTimeRef = useRef<number>(0);
   const accumulatedActiveSecondsRef = useRef<number>(0);
   const lastTickTimeRef = useRef<number>(0);
+  const initialSeekTargetRef = useRef<number>(0);
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const toast = useToast();
@@ -180,6 +181,55 @@ export const AudioPlayer: React.FC = () => {
       .catch(console.error);
   }, [currentLecture]);
 
+  // Persist playback position to SQLite, in-memory store, and localStorage
+  const persistAudioPosition = useCallback(
+    (lectureId: string, seriesId: string | null | undefined, pos: number, dur?: number, pct?: number) => {
+      if (!lectureId || !isFinite(pos)) return;
+      const safePos = Math.max(0, pos);
+      try {
+        localStorage.setItem(`ilm_last_audio_pos_${lectureId}`, String(safePos));
+        localStorage.setItem('ilm_last_played_lecture_id', lectureId);
+        if (seriesId) {
+          localStorage.setItem(`ilm_last_played_lecture_${seriesId}`, lectureId);
+          localStorage.setItem('ilm_last_played_series_id', seriesId);
+        }
+      } catch {}
+
+      const payload: { lastPosition: number; duration?: number; completionPct?: number } = {
+        lastPosition: safePos,
+      };
+      if (typeof dur === 'number' && isFinite(dur)) payload.duration = dur;
+      if (typeof pct === 'number' && isFinite(pct)) payload.completionPct = pct;
+
+      window.api.updateLecture(lectureId, payload).catch(console.error);
+
+      usePlayerStore.setState((s) => ({
+        currentLecture:
+          s.currentLecture?.id === lectureId
+            ? { ...s.currentLecture, ...payload }
+            : s.currentLecture,
+      }));
+    },
+    []
+  );
+
+  // Save position if user closes window
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!currentLecture || !howlRef.current) return;
+      try {
+        const rawPos = howlRef.current.seek();
+        const pos = typeof rawPos === 'number' && isFinite(rawPos) ? rawPos : 0;
+        if (pos > 0) {
+          persistAudioPosition(currentLecture.id, currentLecture.seriesId, pos);
+        }
+      } catch {}
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [currentLecture, persistAudioPosition]);
+
   // Handle auto-advance when lecture finishes
   const handleLectureEnd = useCallback(() => {
     pause();
@@ -238,6 +288,20 @@ export const AudioPlayer: React.FC = () => {
     const audioSrc = toMediaUrl(currentLecture.audioPath);
     const ext = currentLecture.audioPath.split('.').pop()?.toLowerCase() || 'mp3';
 
+    // Retrieve last position from localStorage or lecture record
+    const savedPosStr = typeof window !== 'undefined'
+      ? localStorage.getItem(`ilm_last_audio_pos_${currentLecture.id}`)
+      : null;
+    const savedPos = savedPosStr ? parseFloat(savedPosStr) : 0;
+    const rawPos = currentLecture.lastPosition;
+    const initialPos = Math.max(
+      0,
+      isFinite(savedPos) && savedPos > 0
+        ? savedPos
+        : (typeof rawPos === 'number' && isFinite(rawPos) && rawPos > 0 ? rawPos : 0)
+    );
+    initialSeekTargetRef.current = initialPos;
+
     const howl = new Howl({
       src: [audioSrc],
       format: [ext],
@@ -245,19 +309,23 @@ export const AudioPlayer: React.FC = () => {
       volume: volume,
       rate: playbackSpeed,
       onload: () => {
-        const rawPos = currentLecture.lastPosition;
-        const initialPos = typeof rawPos === 'number' && isFinite(rawPos) && rawPos > 0 ? rawPos : 0;
         usePlayerStore.getState().seek(initialPos);
+        const rawDur = howl.duration();
+        const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
+        usePlayerStore.setState({ duration: dur });
+
         if (initialPos > 0) {
           try {
-            howl.seek(initialPos);
+            const sound = (howl as any)._sounds?.[0];
+            if (sound?._node && isFinite(sound._node.duration) && sound._node.duration > 0) {
+              sound._node.currentTime = Math.min(sound._node.duration, initialPos);
+            } else {
+              howl.seek(initialPos);
+            }
           } catch (e) {
             console.warn('[AudioPlayer] initial seek warning:', e);
           }
         }
-        const rawDur = howl.duration();
-        const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
-        usePlayerStore.setState({ duration: dur });
         const el = getAudioElement();
         if (el) applyEqPreset(el, eqPreset);
 
@@ -280,6 +348,24 @@ export const AudioPlayer: React.FC = () => {
         });
       },
       onplay: () => {
+        if (initialSeekTargetRef.current > 0) {
+          const target = initialSeekTargetRef.current;
+          try {
+            const cur = howl.seek();
+            if (typeof cur === 'number' && Math.abs(cur - target) > 1.5) {
+              const sound = (howl as any)._sounds?.[0];
+              if (sound?._node) {
+                sound._node.currentTime = target;
+              } else {
+                howl.seek(target);
+              }
+              usePlayerStore.getState().seek(target);
+            }
+          } catch (e) {
+            console.warn('[AudioPlayer] onplay seek ensure:', e);
+          }
+          initialSeekTargetRef.current = 0;
+        }
         updateProgress();
         const el = getAudioElement();
         if (el) applyEqPreset(el, eqPreset);
@@ -293,6 +379,15 @@ export const AudioPlayer: React.FC = () => {
 
     return () => {
       flushStudySession();
+      if (currentLecture && howlRef.current) {
+        try {
+          const rawPos = howlRef.current.seek();
+          const pos = typeof rawPos === 'number' && isFinite(rawPos) ? rawPos : 0;
+          if (pos > 0) {
+            persistAudioPosition(currentLecture.id, currentLecture.seriesId, pos);
+          }
+        } catch {}
+      }
       howl.unload();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -356,23 +451,19 @@ export const AudioPlayer: React.FC = () => {
 
       usePlayerStore.getState().setCurrentTime(pos);
 
-      // Save position to SQLite every 5 seconds
+      // Save position to SQLite & localStorage every 5 seconds
       if (now - lastSaveTimeRef.current > 5000 && currentLecture) {
         lastSaveTimeRef.current = now;
         const rawDur = howl.duration();
         const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
         const pct = dur > 0 ? Math.min(100, Math.round((pos / dur) * 100)) : 0;
-        window.api.updateLecture(currentLecture.id, {
-          lastPosition: pos,
-          duration: dur,
-          completionPct: pct,
-        }).catch(console.error);
+        persistAudioPosition(currentLecture.id, currentLecture.seriesId, pos, dur, pct);
       }
     } else {
       lastTickTimeRef.current = 0;
     }
     rafRef.current = requestAnimationFrame(updateProgress);
-  }, [currentLecture, flushStudySession]);
+  }, [currentLecture, flushStudySession, persistAudioPosition]);
 
   const handlePlayPause = () => {
     if (!currentLecture) return;
@@ -387,10 +478,7 @@ export const AudioPlayer: React.FC = () => {
         const rawDur = howlRef.current.duration();
         const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
         const pct = dur > 0 ? Math.min(100, Math.round((pos / dur) * 100)) : 0;
-        window.api.updateLecture(currentLecture.id, {
-          lastPosition: pos,
-          completionPct: pct,
-        }).catch(console.error);
+        persistAudioPosition(currentLecture.id, currentLecture.seriesId, pos, dur, pct);
       }
     } else {
       lastTickTimeRef.current = Date.now();
@@ -418,6 +506,9 @@ export const AudioPlayer: React.FC = () => {
       } catch (err) {
         console.warn('[AudioPlayer] Seek error safely caught:', err);
       }
+    }
+    if (currentLecture) {
+      persistAudioPosition(currentLecture.id, currentLecture.seriesId, safeVal);
     }
   };
 

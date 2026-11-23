@@ -133,7 +133,9 @@ const SeriesItem: React.FC<SeriesItemProps> = ({
     selectLecture(lecture.id);
     setView('study');
     if (lecture.audioPath) {
-      play(lecture);
+      const savedPosStr = localStorage.getItem(`ilm_last_audio_pos_${lecture.id}`);
+      const pos = savedPosStr ? parseFloat(savedPosStr) : (lecture.lastPosition || 0);
+      play({ ...lecture, lastPosition: pos });
     }
   };
 

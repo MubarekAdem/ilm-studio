@@ -75,6 +75,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   const setCurrentPdfPage = useAppStore((s) => s.setCurrentPdfPage);
   const setQuotedPdfText = useAppStore((s) => s.setQuotedPdfText);
   const openImport = useAppStore((s) => s.openImport);
+  const selectedLectureId = useAppStore((s) => s.selectedLectureId);
   const toast = useToast();
 
   const placeholderColor = useColorModeValue('gray.400', 'gray.500');
@@ -113,9 +114,24 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         if (!cancelled) {
           setPdfDoc(doc);
           setTotalPages(doc.numPages);
-          setCurrentPage(1);
-          setPageInput('1');
-          setCurrentPdfPage(1);
+
+          // Restore last read page for this specific lecture or PDF file
+          let initialPage = 1;
+          const lectureKey = selectedLectureId ? `ilm_lecture_pdf_page_${selectedLectureId}` : null;
+          const savedLecturePage = lectureKey ? localStorage.getItem(lectureKey) : null;
+          const savedPdfPage = pdfPath ? localStorage.getItem(`ilm_pdf_page_${pdfPath}`) : null;
+
+          if (savedLecturePage) {
+            const p = parseInt(savedLecturePage, 10);
+            if (!isNaN(p) && p >= 1 && p <= doc.numPages) initialPage = p;
+          } else if (savedPdfPage) {
+            const p = parseInt(savedPdfPage, 10);
+            if (!isNaN(p) && p >= 1 && p <= doc.numPages) initialPage = p;
+          }
+
+          setCurrentPage(initialPage);
+          setPageInput(String(initialPage));
+          setCurrentPdfPage(initialPage);
 
           // Extract table of contents outline in background
           try {
@@ -179,12 +195,33 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
       setCurrentPage(p);
       setPageInput(String(p));
       setCurrentPdfPage(p);
+      if (pdfPath) {
+        try {
+          localStorage.setItem(`ilm_pdf_page_${pdfPath}`, String(p));
+          if (selectedLectureId) {
+            localStorage.setItem(`ilm_lecture_pdf_page_${selectedLectureId}`, String(p));
+          }
+        } catch {}
+      }
       if (containerRef.current) {
         containerRef.current.scrollTop = 0;
       }
     },
-    [totalPages, setCurrentPdfPage]
+    [totalPages, setCurrentPdfPage, pdfPath, selectedLectureId]
   );
+
+  // Jump to saved page when selecting a different lecture that shares this PDF
+  useEffect(() => {
+    if (!pdfDoc || !totalPages || !selectedLectureId) return;
+    const lectureKey = `ilm_lecture_pdf_page_${selectedLectureId}`;
+    const saved = localStorage.getItem(lectureKey);
+    if (saved) {
+      const p = parseInt(saved, 10);
+      if (!isNaN(p) && p >= 1 && p <= totalPages && p !== currentPage) {
+        goToPage(p);
+      }
+    }
+  }, [selectedLectureId, pdfDoc, totalPages, goToPage, currentPage]);
 
   // Handle external jump request (e.g. from clicking page chip in notes)
   useEffect(() => {

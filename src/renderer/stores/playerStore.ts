@@ -87,10 +87,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   // Actions
   play: (lecture) => {
     if (lecture) {
+      const savedPosStr =
+        typeof window !== 'undefined'
+          ? localStorage.getItem(`ilm_last_audio_pos_${lecture.id}`)
+          : null;
+      const savedPos = savedPosStr ? parseFloat(savedPosStr) : 0;
+      const pos = isFinite(savedPos) && savedPos > 0 ? savedPos : lecture.lastPosition || 0;
       set({
-        currentLecture: lecture,
+        currentLecture: { ...lecture, lastPosition: pos },
         isPlaying: true,
-        currentTime: lecture.lastPosition || 0,
+        currentTime: pos,
         loopA: null,
         loopB: null,
         isLooping: false,
