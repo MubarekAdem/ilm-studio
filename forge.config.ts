@@ -14,7 +14,7 @@ const config: ForgeConfig = {
     name: 'ilm-studio',
     executableName: 'ilm-studio',
     icon: './assets/icon',
-    extraResource: ['./assets/quran.db'],
+    extraResource: ['./assets/quran.db', './assets/icon.png', './assets/icon.ico'],
   },
   makers: [
     new MakerZIP({}, ['linux', 'win32']),

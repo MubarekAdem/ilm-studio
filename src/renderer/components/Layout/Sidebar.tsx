@@ -22,6 +22,7 @@ import {
   MenuItem,
   MenuDivider,
   useToast,
+  Image,
 } from '@chakra-ui/react';
 import {
   FiBook,
@@ -48,6 +49,7 @@ import type { Series, Lecture } from '../../../shared/types';
 import { ImportDialog } from '../Library/ImportDialog';
 import { CreateSeriesModal } from '../Library/CreateSeriesModal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import appLogo from '../../assets/icon.png';
 
 /** Completion indicator dot for a lecture */
 const CompletionDot: React.FC<{ pct: number }> = ({ pct }) => {
@@ -455,20 +457,29 @@ export const Sidebar: React.FC = () => {
       >
         {/* Top Header: Logo + Theme toggle */}
         <HStack px={4} py={4} justify="space-between">
-          <HStack spacing={2.5}>
+          <HStack spacing={2.5} align="center">
             <Box
-              w="32px"
-              h="32px"
-              borderRadius="9px"
-              bg={colorMode === 'dark' ? '#3ecf8e' : '#0e7e4e'}
+              w="34px"
+              h="34px"
+              borderRadius="10px"
+              overflow="hidden"
               display="flex"
               alignItems="center"
               justifyContent="center"
+              bg={colorMode === 'dark' ? 'whiteAlpha.100' : 'blackAlpha.50'}
+              p={1}
               boxShadow="sm"
+              border="1px solid"
+              borderColor={borderColor}
+              flexShrink={0}
             >
-              <Text fontSize="md" fontWeight="bold" color={colorMode === 'dark' ? '#030303' : 'white'}>
-                عِ
-              </Text>
+              <Image
+                src={appLogo}
+                alt="Ilm Studio"
+                w="100%"
+                h="100%"
+                objectFit="contain"
+              />
             </Box>
             <Box>
               <Heading size="sm" color={colorMode === 'dark' ? '#3ecf8e' : '#0e7e4e'} fontWeight="bold" letterSpacing="tight">

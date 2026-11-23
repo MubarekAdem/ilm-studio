@@ -40,10 +40,29 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
 
+function getAppIconPath(): string {
+  const isWin = process.platform === 'win32';
+  const iconFile = isWin ? 'icon.ico' : 'icon.png';
+  const candidates = [
+    path.join(process.resourcesPath, iconFile),
+    path.join(process.resourcesPath, 'assets', iconFile),
+    path.join(app.getAppPath(), 'assets', iconFile),
+    path.join(__dirname, '..', '..', 'assets', iconFile),
+    path.join(app.getAppPath(), 'assets', 'icon.png'),
+    path.join(process.resourcesPath, 'icon.png'),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) {
+      return c;
+    }
+  }
+  return path.join(app.getAppPath(), 'assets', 'icon.png');
+}
+
 function createTray(): void {
   if (tray) return;
 
-  const iconPath = path.join(app.getAppPath(), 'assets', 'icon.png');
+  const iconPath = getAppIconPath();
   try {
     tray = new Tray(iconPath);
     tray.setToolTip('Ilm Studio (عِلم ستوديو) — Islamic Lecture Study');
@@ -112,6 +131,7 @@ function createWindow(): void {
     minHeight: 600,
     backgroundColor: '#1a1a2e',
     show: false,
+    icon: getAppIconPath(),
     titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
