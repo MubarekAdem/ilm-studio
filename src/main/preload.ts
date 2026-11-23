@@ -4,6 +4,7 @@ import type {
   Series,
   Lecture,
   Note,
+  Tag,
   Bookmark,
   Chapter,
   StudySession,
@@ -54,6 +55,20 @@ const api = {
   deleteNote: (id: string): Promise<boolean> =>
     ipcRenderer.invoke(IPC_CHANNELS.DB_DELETE_NOTE, id),
 
+  // ── Tags ────────────────────────────────────────────────────────────
+  getAllTags: (): Promise<Tag[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_GET_ALL_TAGS),
+  createTag: (data: Omit<Tag, 'id'>): Promise<Tag> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_CREATE_TAG, data),
+  deleteTag: (id: string): Promise<boolean> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_DELETE_TAG, id),
+  getNoteTags: (noteId: string): Promise<Tag[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_GET_NOTE_TAGS, noteId),
+  addNoteTag: (noteId: string, tagId: string): Promise<boolean> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_ADD_NOTE_TAG, noteId, tagId),
+  removeNoteTag: (noteId: string, tagId: string): Promise<boolean> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_REMOVE_NOTE_TAG, noteId, tagId),
+
   // ── Bookmarks ───────────────────────────────────────────────────────
   getBookmarks: (lectureId: string): Promise<Bookmark[]> =>
     ipcRenderer.invoke(IPC_CHANNELS.DB_GET_BOOKMARKS, lectureId),
@@ -79,7 +94,7 @@ const api = {
   // ── Settings ────────────────────────────────────────────────────────
   getSettings: (): Promise<AppSettings> =>
     ipcRenderer.invoke(IPC_CHANNELS.DB_GET_SETTINGS),
-  updateSetting: (key: keyof AppSettings, value: string | number): Promise<AppSettings> =>
+  updateSetting: (key: keyof AppSettings, value: string | number | boolean): Promise<AppSettings> =>
     ipcRenderer.invoke(IPC_CHANNELS.DB_UPDATE_SETTING, key, value),
 
   // ── Stats ───────────────────────────────────────────────────────────
@@ -115,6 +130,8 @@ const api = {
     ipcRenderer.invoke(IPC_CHANNELS.FILE_OPEN_DIALOG, options),
   openFileDialog: (options: OpenDialogOptions): Promise<string[]> =>
     ipcRenderer.invoke(IPC_CHANNELS.FILE_OPEN_DIALOG, options),
+  readFileBuffer: (filePath: string): Promise<Uint8Array | null> =>
+    ipcRenderer.invoke(IPC_CHANNELS.FILE_READ_BUFFER, filePath),
 
   // ── App ─────────────────────────────────────────────────────────────
   getDataPath: (): Promise<string> =>

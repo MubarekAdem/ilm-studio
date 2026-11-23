@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Box,
   HStack,
@@ -23,12 +23,15 @@ import {
   FiAlignLeft,
   FiBookOpen,
   FiDownload,
+  FiMaximize2,
+  FiMinimize2,
 } from 'react-icons/fi';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useAppStore } from '../../stores/appStore';
 import { usePlayerStore } from '../../stores/playerStore';
 import { QuranLookupModal } from '../Quran/QuranLookupModal';
+import { TagPicker } from '../Tags/TagPicker';
 import type { Ayah } from '../../../shared/types';
 
 interface NoteEditorProps {
@@ -46,13 +49,19 @@ function formatTime(seconds: number): string {
 export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
   const [noteId, setNoteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'dirty'>('saved');
   const [isRTL, setIsRTL] = useState(false);
   const [isQuranOpen, setIsQuranOpen] = useState(false);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const toast = useToast();
 
   const lecturesList = useAppStore((s) => s.lecturesList);
   const currentPdfPage = useAppStore((s) => s.currentPdfPage);
   const jumpToPdfPage = useAppStore((s) => s.jumpToPdfPage);
+  const quotedPdfText = useAppStore((s) => s.quotedPdfText);
+  const setQuotedPdfText = useAppStore((s) => s.setQuotedPdfText);
+  const isFocusMode = useAppStore((s) => s.isFocusMode);
+  const toggleFocusMode = useAppStore((s) => s.toggleFocusMode);
 
   const currentTime = usePlayerStore((s) => s.currentTime);
   const seek = usePlayerStore((s) => s.seek);
@@ -74,9 +83,34 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
           'outline: none; min-height: 350px; padding: 16px; font-size: 15px; line-height: 1.8;',
       },
     },
+    onUpdate: () => {
+      setSaveStatus('dirty');
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+      autoSaveTimerRef.current = setTimeout(() => {
+        handleSave(false);
+      }, 2000);
+    },
   });
 
-  // Load existing note when lectureId changes
+  // Insert quoted matn text from PDF selection
+  useEffect(() => {
+    if (!quotedPdfText || !editor) return;
+
+    const { text, page } = quotedPdfText;
+    const isArabic = /[\u0600-\u06FF]/.test(text);
+    const quoteHtml = `
+      <blockquote class="matn-quote" style="border-${isArabic ? 'right' : 'left'}: 4px solid #d4a843; background: rgba(212, 168, 67, 0.12); padding: 10px 14px; margin: 10px 0; border-radius: 4px;" ${isArabic ? 'dir="rtl"' : ''}>
+        <p style="font-size: ${isArabic ? '18px' : '14px'}; font-family: ${isArabic ? "'Amiri', serif" : 'inherit'}; font-weight: 500; margin: 0 0 6px 0; line-height: 1.9;">${text}</p>
+        <p dir="ltr" style="font-size: 11px; color: #d4a843; margin: 0; font-weight: 600;">— Matn / Textbook (p. ${page})</p>
+      </blockquote>
+      <p></p>
+    `;
+
+    editor.chain().focus().insertContent(quoteHtml).run();
+    setQuotedPdfText(null);
+  }, [quotedPdfText, editor, setQuotedPdfText]);
   useEffect(() => {
     if (!lectureId || !editor) {
       editor?.commands.clearContent();
@@ -115,9 +149,14 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
   }, [lectureId, editor]);
 
   // Save note
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(async (isManual = true) => {
     if (!lectureId || !editor) return;
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
     setSaving(true);
+    setSaveStatus('saving');
 
     try {
       const content = JSON.stringify(editor.getJSON());
@@ -134,28 +173,44 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
         if (created?.id) setNoteId(created.id);
       }
 
-      toast({
-        title: 'Note saved',
-        status: 'success',
-        duration: 1500,
-        isClosable: true,
-        position: 'bottom-right',
-      });
+      setSaveStatus('saved');
+      if (isManual) {
+        toast({
+          title: 'Note saved',
+          status: 'success',
+          duration: 1500,
+          isClosable: true,
+          position: 'bottom-right',
+        });
+      }
     } catch (err) {
       console.error('Failed to save note:', err);
-      toast({
-        title: 'Save failed',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-        position: 'bottom-right',
-      });
+      setSaveStatus('dirty');
+      if (isManual) {
+        toast({
+          title: 'Save failed',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+          position: 'bottom-right',
+        });
+      }
     } finally {
       setSaving(false);
     }
   }, [lectureId, editor, noteId, currentTime, currentPdfPage, toast]);
 
-  // Export note to Markdown
+  // Listen for Ctrl+S / Cmd+S to save note
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSave(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSave]);
   const handleExportMarkdown = () => {
     if (!editor || !lecture) return;
     const json = editor.getJSON();
@@ -288,7 +343,20 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
 
   if (!lectureId) {
     return (
-      <VStack h="100%" align="center" justify="center" p={8} spacing={3}>
+      <VStack h="100%" align="center" justify="center" p={8} spacing={3} position="relative">
+        <Box position="absolute" top="12px" right="14px">
+          <Tooltip label={isFocusMode ? 'Exit Zen Mode (Show Sidebar)' : 'Zen Focus Mode (Hide Sidebar)'}>
+            <Button
+              size="sm"
+              variant="outline"
+              colorScheme={isFocusMode ? 'yellow' : 'gray'}
+              leftIcon={isFocusMode ? <FiMinimize2 /> : <FiMaximize2 />}
+              onClick={toggleFocusMode}
+            >
+              {isFocusMode ? 'Exit Zen' : 'Zen Mode'}
+            </Button>
+          </Tooltip>
+        </Box>
         <Text color="gray.500" fontSize="3xl">
           📝
         </Text>
@@ -302,21 +370,36 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
   return (
     <VStack h="100%" spacing={0} align="stretch">
       {/* Header */}
-      <HStack px={4} py={3} justify="space-between" flexShrink={0} bg={surfaceBg}>
-        <Box flex={1} minW={0} mr={2}>
+      <HStack px={4} py={3} justify="space-between" flexShrink={0} bg={surfaceBg} wrap="wrap" gap={2}>
+        <Box flex={1} minW="180px">
           <Text fontSize="sm" fontWeight="bold" noOfLines={1}>
             {lecture?.title ?? 'Lecture Notes'}
           </Text>
-          <HStack spacing={2} mt={0.5}>
-            <Badge colorScheme="green" fontSize="2xs" borderRadius="md">
-              Notes
+          <HStack spacing={2} mt={0.5} align="center">
+            <Badge
+              colorScheme={
+                saveStatus === 'saved' ? 'green' : saveStatus === 'saving' ? 'yellow' : 'gray'
+              }
+              fontSize="2xs"
+              borderRadius="md"
+            >
+              {saveStatus === 'saved' ? 'Saved ✓' : saveStatus === 'saving' ? 'Saving...' : 'Unsaved'}
             </Badge>
-            <Text fontSize="2xs" color="gray.400">
-              Synced with audio & PDF
-            </Text>
+            <TagPicker noteId={noteId} />
           </HStack>
         </Box>
         <HStack spacing={2}>
+          <Tooltip label={isFocusMode ? 'Exit Zen Mode (Show Sidebar)' : 'Zen Focus Mode (Hide Sidebar)'}>
+            <Button
+              size="sm"
+              variant="outline"
+              colorScheme={isFocusMode ? 'yellow' : 'gray'}
+              leftIcon={isFocusMode ? <FiMinimize2 /> : <FiMaximize2 />}
+              onClick={toggleFocusMode}
+            >
+              {isFocusMode ? 'Exit Zen' : 'Zen Mode'}
+            </Button>
+          </Tooltip>
           <Tooltip label="Export Notes to Markdown (.md)">
             <Button
               size="sm"
@@ -328,15 +411,17 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ lectureId }) => {
               Export
             </Button>
           </Tooltip>
-          <Button
-            size="sm"
-            colorScheme="green"
-            leftIcon={<FiSave />}
-            onClick={handleSave}
-            isLoading={saving}
-          >
-            Save
-          </Button>
+          <Tooltip label="Save Note (Ctrl+S)">
+            <Button
+              size="sm"
+              colorScheme="green"
+              leftIcon={<FiSave />}
+              onClick={() => handleSave(true)}
+              isLoading={saving}
+            >
+              Save
+            </Button>
+          </Tooltip>
         </HStack>
       </HStack>
 

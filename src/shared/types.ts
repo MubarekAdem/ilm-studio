@@ -117,10 +117,22 @@ export interface AppSettings {
   defaultImportMode: 'copy' | 'reference' | 'ask';
   fontSize: number;
   arabicFontSize: number;
+  launchReminderEnabled: boolean;
+  chromeReminderEnabled: boolean;
+  minimizeToTrayEnabled: boolean;
+  reminderIntervalHours: number;
 }
 
 // IPC Channel names
 export const IPC_CHANNELS = {
+  // Tags
+  DB_GET_ALL_TAGS: 'db:get-all-tags',
+  DB_CREATE_TAG: 'db:create-tag',
+  DB_DELETE_TAG: 'db:delete-tag',
+  DB_GET_NOTE_TAGS: 'db:get-note-tags',
+  DB_ADD_NOTE_TAG: 'db:add-note-tag',
+  DB_REMOVE_NOTE_TAG: 'db:remove-note-tag',
+
   // Database
   DB_GET_ALL_SERIES: 'db:get-all-series',
   DB_CREATE_SERIES: 'db:create-series',
@@ -162,6 +174,7 @@ export const IPC_CHANNELS = {
   FILE_IMPORT_PDF: 'file:import-pdf',
   FILE_GET_AUDIO_METADATA: 'file:get-audio-metadata',
   FILE_OPEN_DIALOG: 'file:open-dialog',
+  FILE_READ_BUFFER: 'file:read-buffer',
 
   // App
   APP_GET_DATA_PATH: 'app:get-data-path',

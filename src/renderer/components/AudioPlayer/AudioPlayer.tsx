@@ -49,6 +49,8 @@ import {
 import { Howl } from 'howler';
 import { usePlayerStore, EqPreset } from '../../stores/playerStore';
 import { useAppStore } from '../../stores/appStore';
+import { applyEqPreset } from '../../utils/audioFilters';
+import { toMediaUrl } from '../../utils/mediaUrl';
 
 const SPEED_OPTIONS = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5];
 const SLEEP_TIMER_OPTIONS = [
@@ -119,6 +121,24 @@ export const AudioPlayer: React.FC = () => {
 
   const barBg = useColorModeValue('gray.100', '#0f172a');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const popoverBg = useColorModeValue('white', '#16213e');
+  const itemHoverBg = useColorModeValue('blackAlpha.50', 'whiteAlpha.100');
+
+  // Helper to get underlying HTMLAudioElement for Web Audio EQ
+  const getAudioElement = useCallback((): HTMLAudioElement | null => {
+    const howl = howlRef.current;
+    if (!howl) return null;
+    const sound = (howl as any)._sounds?.[0];
+    return (sound?._node as HTMLAudioElement) || null;
+  }, []);
+
+  // Sync EQ preset to Web Audio filter chain
+  useEffect(() => {
+    const el = getAudioElement();
+    if (el) {
+      applyEqPreset(el, eqPreset);
+    }
+  }, [eqPreset, getAudioElement]);
 
   // Sleep timer interval
   useEffect(() => {
@@ -215,20 +235,54 @@ export const AudioPlayer: React.FC = () => {
     loadBookmarks(currentLecture.id);
     loadChapters(currentLecture.id);
 
+    const audioSrc = toMediaUrl(currentLecture.audioPath);
+    const ext = currentLecture.audioPath.split('.').pop()?.toLowerCase() || 'mp3';
+
     const howl = new Howl({
-      src: [currentLecture.audioPath],
+      src: [audioSrc],
+      format: [ext],
       html5: true,
       volume: volume,
       rate: playbackSpeed,
       onload: () => {
-        const initialPos = currentLecture.lastPosition || 0;
+        const rawPos = currentLecture.lastPosition;
+        const initialPos = typeof rawPos === 'number' && isFinite(rawPos) && rawPos > 0 ? rawPos : 0;
         usePlayerStore.getState().seek(initialPos);
-        howl.seek(initialPos);
-        const dur = howl.duration();
+        if (initialPos > 0) {
+          try {
+            howl.seek(initialPos);
+          } catch (e) {
+            console.warn('[AudioPlayer] initial seek warning:', e);
+          }
+        }
+        const rawDur = howl.duration();
+        const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
         usePlayerStore.setState({ duration: dur });
+        const el = getAudioElement();
+        if (el) applyEqPreset(el, eqPreset);
+
+        // If player state is set to playing, start Howler immediately
+        if (usePlayerStore.getState().isPlaying && !howl.playing()) {
+          try {
+            howl.play();
+          } catch (e) {
+            console.warn('[AudioPlayer] auto-play on load error:', e);
+          }
+        }
+      },
+      onloaderror: (_id, err) => {
+        console.error('[AudioPlayer] Howler load error:', err, 'for URL:', audioSrc);
+      },
+      onplayerror: (_id, err) => {
+        console.error('[AudioPlayer] Howler play error:', err);
+        howl.once('unlock', () => {
+          howl.play();
+        });
       },
       onplay: () => {
         updateProgress();
+        const el = getAudioElement();
+        if (el) applyEqPreset(el, eqPreset);
       },
       onend: () => {
         handleLectureEnd();
@@ -271,7 +325,8 @@ export const AudioPlayer: React.FC = () => {
   const updateProgress = useCallback(() => {
     const howl = howlRef.current;
     if (howl && howl.playing()) {
-      const pos = howl.seek() as number;
+      const rawPos = howl.seek();
+      const pos = typeof rawPos === 'number' && isFinite(rawPos) ? rawPos : 0;
 
       // Track active listening seconds
       const now = Date.now();
@@ -304,7 +359,8 @@ export const AudioPlayer: React.FC = () => {
       // Save position to SQLite every 5 seconds
       if (now - lastSaveTimeRef.current > 5000 && currentLecture) {
         lastSaveTimeRef.current = now;
-        const dur = howl.duration();
+        const rawDur = howl.duration();
+        const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
         const pct = dur > 0 ? Math.min(100, Math.round((pos / dur) * 100)) : 0;
         window.api.updateLecture(currentLecture.id, {
           lastPosition: pos,
@@ -322,11 +378,14 @@ export const AudioPlayer: React.FC = () => {
     if (!currentLecture) return;
     if (isPlaying) {
       pause();
+      howlRef.current?.pause();
       flushStudySession();
       lastTickTimeRef.current = 0;
       if (howlRef.current) {
-        const pos = howlRef.current.seek() as number;
-        const dur = howlRef.current.duration();
+        const rawPos = howlRef.current.seek();
+        const pos = typeof rawPos === 'number' && isFinite(rawPos) ? rawPos : 0;
+        const rawDur = howlRef.current.duration();
+        const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
         const pct = dur > 0 ? Math.min(100, Math.round((pos / dur) * 100)) : 0;
         window.api.updateLecture(currentLecture.id, {
           lastPosition: pos,
@@ -336,21 +395,42 @@ export const AudioPlayer: React.FC = () => {
     } else {
       lastTickTimeRef.current = Date.now();
       play();
+      howlRef.current?.play();
     }
   };
 
   const handleSeek = (val: number) => {
-    seek(val);
-    howlRef.current?.seek(val);
+    if (typeof val !== 'number' || isNaN(val) || !isFinite(val)) return;
+    const safeVal = Math.max(0, val);
+    seek(safeVal);
+    const howl = howlRef.current;
+    if (howl) {
+      try {
+        const sound = (howl as any)._sounds?.[0];
+        if (sound?._node && isFinite(sound._node.duration) && sound._node.duration > 0) {
+          const clamped = Math.min(sound._node.duration, safeVal);
+          if (isFinite(clamped)) {
+            sound._node.currentTime = clamped;
+          }
+        } else {
+          howl.seek(safeVal);
+        }
+      } catch (err) {
+        console.warn('[AudioPlayer] Seek error safely caught:', err);
+      }
+    }
   };
 
   const handleSkipBack = () => {
-    const newTime = Math.max(0, currentTime - 10);
+    const cur = typeof currentTime === 'number' && isFinite(currentTime) ? currentTime : 0;
+    const newTime = Math.max(0, cur - 10);
     handleSeek(newTime);
   };
 
   const handleSkipForward = () => {
-    const newTime = Math.min(duration, currentTime + 10);
+    const cur = typeof currentTime === 'number' && isFinite(currentTime) ? currentTime : 0;
+    const dur = typeof duration === 'number' && isFinite(duration) ? duration : cur + 10;
+    const newTime = Math.min(dur, cur + 10);
     handleSeek(newTime);
   };
 
@@ -485,11 +565,12 @@ export const AudioPlayer: React.FC = () => {
 
         <Slider
           aria-label="Audio progress"
-          value={currentTime}
+          value={typeof currentTime === 'number' && isFinite(currentTime) && currentTime >= 0 ? currentTime : 0}
           min={0}
-          max={duration || 1}
+          max={typeof duration === 'number' && isFinite(duration) && duration > 0 ? duration : 1}
           step={0.1}
           onChange={handleSeek}
+          isDisabled={!currentLecture?.audioPath || !isFinite(duration) || duration <= 0}
           size="sm"
           colorScheme="green"
         >
@@ -686,7 +767,7 @@ export const AudioPlayer: React.FC = () => {
                 </Tooltip>
               </Box>
             </PopoverTrigger>
-            <PopoverContent w="300px" bg={useColorModeValue('white', '#16213e')}>
+            <PopoverContent w="300px" bg={popoverBg}>
               <PopoverArrow />
               <PopoverCloseButton size="sm" />
               <PopoverHeader fontWeight="bold" fontSize="xs">
@@ -701,7 +782,7 @@ export const AudioPlayer: React.FC = () => {
                       py={1}
                       borderRadius="md"
                       bg={currentChapter?.id === ch.id ? 'whiteAlpha.150' : 'transparent'}
-                      _hover={{ bg: useColorModeValue('blackAlpha.50', 'whiteAlpha.100') }}
+                      _hover={{ bg: itemHoverBg }}
                       justify="space-between"
                       cursor="pointer"
                       onClick={() => {
@@ -839,7 +920,7 @@ export const AudioPlayer: React.FC = () => {
                 </Tooltip>
               </Box>
             </PopoverTrigger>
-            <PopoverContent w="280px" bg={useColorModeValue('white', '#16213e')}>
+            <PopoverContent w="280px" bg={popoverBg}>
               <PopoverArrow />
               <PopoverCloseButton size="sm" />
               <PopoverHeader fontWeight="bold" fontSize="xs">
@@ -862,7 +943,7 @@ export const AudioPlayer: React.FC = () => {
                       px={2}
                       py={1}
                       borderRadius="md"
-                      _hover={{ bg: useColorModeValue('blackAlpha.50', 'whiteAlpha.100') }}
+                      _hover={{ bg: itemHoverBg }}
                       justify="space-between"
                       cursor="pointer"
                       onClick={() => {

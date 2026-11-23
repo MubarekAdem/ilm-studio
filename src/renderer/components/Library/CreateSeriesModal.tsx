@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -19,15 +19,17 @@ import {
   useToast,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiFolderPlus } from 'react-icons/fi';
+import { FiFolderPlus, FiEdit2 } from 'react-icons/fi';
 import { useAppStore } from '../../stores/appStore';
+import type { Series } from '../../../shared/types';
 
 interface CreateSeriesModalProps {
   isOpen: boolean;
   onClose: () => void;
+  series?: Series | null;
 }
 
-export const CreateSeriesModal: React.FC<CreateSeriesModalProps> = ({ isOpen, onClose }) => {
+export const CreateSeriesModal: React.FC<CreateSeriesModalProps> = ({ isOpen, onClose, series }) => {
   const [title, setTitle] = useState('');
   const [scholar, setScholar] = useState('');
   const [topic, setTopic] = useState('');
@@ -40,7 +42,23 @@ export const CreateSeriesModal: React.FC<CreateSeriesModalProps> = ({ isOpen, on
   const modalBg = useColorModeValue('white', '#16213e');
   const inputBg = useColorModeValue('gray.50', 'whiteAlpha.50');
 
-  const handleCreate = async () => {
+  const isEdit = Boolean(series);
+
+  useEffect(() => {
+    if (series) {
+      setTitle(series.title || '');
+      setScholar(series.scholar || '');
+      setTopic(series.topic || '');
+      setDescription(series.description || '');
+    } else {
+      setTitle('');
+      setScholar('');
+      setTopic('');
+      setDescription('');
+    }
+  }, [series, isOpen]);
+
+  const handleSubmit = async () => {
     if (!title.trim()) {
       toast({
         title: 'Title is required',
@@ -53,27 +71,41 @@ export const CreateSeriesModal: React.FC<CreateSeriesModalProps> = ({ isOpen, on
 
     setSaving(true);
     try {
-      await window.api.createSeries({
-        title: title.trim(),
-        scholar: scholar.trim(),
-        topic: topic.trim(),
-        description: description.trim(),
-        totalLectures: 0,
-      });
-
-      toast({
-        title: 'Series created',
-        status: 'success',
-        duration: 2500,
-        isClosable: true,
-      });
+      if (isEdit && series) {
+        await window.api.updateSeries(series.id, {
+          title: title.trim(),
+          scholar: scholar.trim(),
+          topic: topic.trim(),
+          description: description.trim(),
+        });
+        toast({
+          title: 'Series updated',
+          status: 'success',
+          duration: 2500,
+          isClosable: true,
+        });
+      } else {
+        await window.api.createSeries({
+          title: title.trim(),
+          scholar: scholar.trim(),
+          topic: topic.trim(),
+          description: description.trim(),
+          totalLectures: 0,
+        });
+        toast({
+          title: 'Series created',
+          status: 'success',
+          duration: 2500,
+          isClosable: true,
+        });
+      }
 
       await loadSeries();
       resetAndClose();
     } catch (error) {
-      console.error('Failed to create series:', error);
+      console.error('Failed to save series:', error);
       toast({
-        title: 'Error creating series',
+        title: isEdit ? 'Error updating series' : 'Error creating series',
         description: String(error),
         status: 'error',
         duration: 4000,
@@ -98,8 +130,8 @@ export const CreateSeriesModal: React.FC<CreateSeriesModalProps> = ({ isOpen, on
       <ModalContent bg={modalBg}>
         <ModalHeader>
           <HStack spacing={2}>
-            <Icon as={FiFolderPlus} color="green.400" />
-            <Text>New Lecture Series</Text>
+            <Icon as={isEdit ? FiEdit2 : FiFolderPlus} color="green.400" />
+            <Text>{isEdit ? 'Edit Lecture Series' : 'New Lecture Series'}</Text>
           </HStack>
         </ModalHeader>
         <ModalCloseButton />
@@ -160,11 +192,11 @@ export const CreateSeriesModal: React.FC<CreateSeriesModalProps> = ({ isOpen, on
           </Button>
           <Button
             colorScheme="green"
-            onClick={handleCreate}
+            onClick={handleSubmit}
             isLoading={saving}
             size="sm"
           >
-            Create Series
+            {isEdit ? 'Save Changes' : 'Create Series'}
           </Button>
         </ModalFooter>
       </ModalContent>

@@ -137,19 +137,15 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     const { currentLecture, currentTime } = get();
     if (!currentLecture) return;
 
-    const bookmark: Bookmark = {
-      id: uuidv4(),
-      lectureId: currentLecture.id,
-      type: 'audio',
-      position: currentTime,
-      label,
-      note,
-      createdAt: new Date().toISOString(),
-    };
-
     try {
-      await window.api.createBookmark(bookmark);
-      set((state) => ({ bookmarks: [...state.bookmarks, bookmark] }));
+      const created = await window.api.createBookmark({
+        lectureId: currentLecture.id,
+        type: 'audio',
+        position: currentTime,
+        label,
+        note,
+      });
+      set((state) => ({ bookmarks: [...state.bookmarks, created] }));
     } catch (error) {
       console.error('Failed to create bookmark:', error);
     }

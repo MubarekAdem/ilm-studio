@@ -76,6 +76,34 @@ export function registerIpcHandlers(): void {
     return database.deleteNote(id);
   });
 
+  // ── Tags ────────────────────────────────────────────────────────────
+
+  ipcMain.handle(IPC_CHANNELS.DB_GET_ALL_TAGS, () => {
+    return database.getAllTags();
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_CREATE_TAG, (_event, data: { name: string; category: 'topic' | 'scholar' | 'book' | 'custom' }) => {
+    return database.createTag(data);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_DELETE_TAG, (_event, id: string) => {
+    return database.deleteTag(id);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_GET_NOTE_TAGS, (_event, noteId: string) => {
+    return database.getNoteTags(noteId);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_ADD_NOTE_TAG, (_event, noteId: string, tagId: string) => {
+    database.addNoteTag(noteId, tagId);
+    return true;
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_REMOVE_NOTE_TAG, (_event, noteId: string, tagId: string) => {
+    database.removeNoteTag(noteId, tagId);
+    return true;
+  });
+
   // ── Bookmarks ───────────────────────────────────────────────────────
 
   ipcMain.handle(IPC_CHANNELS.DB_GET_BOOKMARKS, (_event, lectureId: string) => {
@@ -120,7 +148,7 @@ export function registerIpcHandlers(): void {
     return database.getSettings();
   });
 
-  ipcMain.handle(IPC_CHANNELS.DB_UPDATE_SETTING, (_event, key: keyof AppSettings, value: string | number) => {
+  ipcMain.handle(IPC_CHANNELS.DB_UPDATE_SETTING, (_event, key: keyof AppSettings, value: string | number | boolean) => {
     database.updateSetting(key, value);
     return database.getSettings();
   });
@@ -268,6 +296,15 @@ export function registerIpcHandlers(): void {
         path: filePath,
       };
     } catch {
+      return null;
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.FILE_READ_BUFFER, async (_event, filePath: string) => {
+    try {
+      return fs.readFileSync(filePath);
+    } catch (err) {
+      console.error('Failed to read file buffer:', err);
       return null;
     }
   });

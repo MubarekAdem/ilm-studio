@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import { app } from 'electron';
 import path from 'path';
 import { v4 as uuid } from 'uuid';
+import { openDatabase } from './dbHelper';
 import type {
   Series,
   Lecture,
@@ -26,7 +27,7 @@ let db: Database.Database;
 
 export function initDatabase(): void {
   const dbPath = path.join(app.getPath('userData'), 'ilm-studio.db');
-  db = new Database(dbPath);
+  db = openDatabase(dbPath);
 
   // Enable WAL for better concurrent read performance
   db.pragma('journal_mode = WAL');
@@ -141,6 +142,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   defaultImportMode: 'ask',
   fontSize: 16,
   arabicFontSize: 22,
+  launchReminderEnabled: true,
+  chromeReminderEnabled: true,
+  minimizeToTrayEnabled: true,
+  reminderIntervalHours: 1,
 };
 
 function seedDefaults(): void {
@@ -286,6 +291,20 @@ export function createTag(data: Omit<Tag, 'id'>): Tag {
   return { id, ...data };
 }
 
+export function deleteTag(id: string): boolean {
+  return db.prepare('DELETE FROM tags WHERE id = ?').run(id).changes > 0;
+}
+
+export function getNoteTags(noteId: string): Tag[] {
+  return db.prepare(`
+    SELECT t.id, t.name, t.category
+    FROM tags t
+    JOIN note_tags nt ON nt.tagId = t.id
+    WHERE nt.noteId = ?
+    ORDER BY t.category, t.name
+  `).all(noteId) as Tag[];
+}
+
 export function addNoteTag(noteId: string, tagId: string): void {
   db.prepare('INSERT OR IGNORE INTO note_tags (noteId, tagId) VALUES (?, ?)').run(noteId, tagId);
 }
@@ -384,6 +403,8 @@ export function getSettings(): AppSettings {
       const target = DEFAULT_SETTINGS[key];
       if (typeof target === 'number') {
         (settings as Record<string, unknown>)[key] = Number(row.value);
+      } else if (typeof target === 'boolean') {
+        (settings as Record<string, unknown>)[key] = row.value === 'true' || row.value === '1';
       } else {
         (settings as Record<string, unknown>)[key] = row.value;
       }
@@ -392,7 +413,7 @@ export function getSettings(): AppSettings {
   return settings;
 }
 
-export function updateSetting(key: keyof AppSettings, value: string | number): void {
+export function updateSetting(key: keyof AppSettings, value: string | number | boolean): void {
   db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(key, String(value));
 }
 

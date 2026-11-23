@@ -3,6 +3,7 @@ import { app } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import type { Surah, Ayah } from '../../shared/types';
+import { openDatabase } from './dbHelper';
 
 let quranDb: Database.Database | null = null;
 
@@ -31,7 +32,7 @@ export function initQuranDatabase(): void {
     return;
   }
   try {
-    quranDb = new Database(dbPath, { readonly: true });
+    quranDb = openDatabase(dbPath, { readonly: true });
     quranDb.pragma('journal_mode = OFF');
     console.log('Loaded offline Quran database successfully from:', dbPath);
   } catch (err) {

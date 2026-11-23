@@ -43,6 +43,7 @@ export const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<StudyStats | null>(null);
   const [reviews, setReviews] = useState<DueReviewItem[]>([]);
   const [seriesPacing, setSeriesPacing] = useState<SeriesPacingInfo[]>([]);
+  const [dailyGoalMinutes, setDailyGoalMinutes] = useState(30);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
 
@@ -58,14 +59,18 @@ export const Dashboard: React.FC = () => {
 
   const loadDashboardData = useCallback(async () => {
     try {
-      const [statsData, reviewsData, pacingData] = await Promise.all([
+      const [statsData, reviewsData, pacingData, settingsData] = await Promise.all([
         window.api.getStats(),
         window.api.getDueReviews(),
         window.api.getSeriesPacing(),
+        window.api.getSettings(),
       ]);
       setStats(statsData);
       setReviews(reviewsData);
       setSeriesPacing(pacingData);
+      if (settingsData?.dailyGoalMinutes) {
+        setDailyGoalMinutes(Number(settingsData.dailyGoalMinutes));
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -122,9 +127,8 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const dailyGoalMinutes = 30;
   const todayMinutes = stats?.todayMinutes || 0;
-  const goalProgressPct = Math.min(100, Math.round((todayMinutes / dailyGoalMinutes) * 100));
+  const goalProgressPct = Math.min(100, Math.round((todayMinutes / (dailyGoalMinutes || 30)) * 100));
 
   // Find max minutes in weekly breakdown for chart scaling
   const weeklyData = stats?.weeklyBreakdown || [];

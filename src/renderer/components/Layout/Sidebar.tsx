@@ -20,6 +20,7 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  MenuDivider,
   useToast,
 } from '@chakra-ui/react';
 import {
@@ -35,12 +36,18 @@ import {
   FiFolderPlus,
   FiSearch,
   FiBookOpen,
+  FiEdit2,
+  FiSettings,
+  FiTag,
+  FiMusic,
+  FiFileText,
 } from 'react-icons/fi';
 import { useAppStore } from '../../stores/appStore';
 import { usePlayerStore } from '../../stores/playerStore';
 import type { Series, Lecture } from '../../../shared/types';
 import { ImportDialog } from '../Library/ImportDialog';
 import { CreateSeriesModal } from '../Library/CreateSeriesModal';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 
 /** Completion indicator dot for a lecture */
 const CompletionDot: React.FC<{ pct: number }> = ({ pct }) => {
@@ -50,21 +57,72 @@ const CompletionDot: React.FC<{ pct: number }> = ({ pct }) => {
   return <Circle size="10px" bg={color} flexShrink={0} />;
 };
 
-/** A single series entry that expands to show lectures */
-const SeriesItem: React.FC<{
+interface SeriesItemProps {
   series: Series;
-  lectures: Lecture[];
+  lectures?: Lecture[];
   isSelected: boolean;
   onSelect: () => void;
+  onEditSeries: (series: Series) => void;
   onDeleteSeries: (id: string) => void;
   onDeleteLecture: (id: string) => void;
-}> = ({ series, lectures, isSelected, onSelect, onDeleteSeries, onDeleteLecture }) => {
-  const [expanded, setExpanded] = useState(false);
+}
+
+/** A single series entry that expands to show lectures */
+const SeriesItem: React.FC<SeriesItemProps> = ({
+  series,
+  lectures: propLectures,
+  isSelected,
+  onSelect,
+  onEditSeries,
+  onDeleteSeries,
+  onDeleteLecture,
+}) => {
+  const [expanded, setExpanded] = useState(isSelected);
+  const [courseLectures, setCourseLectures] = useState<Lecture[]>([]);
   const selectLecture = useAppStore((s) => s.selectLecture);
   const setView = useAppStore((s) => s.setView);
   const selectedLectureId = useAppStore((s) => s.selectedLectureId);
+  const lecturesList = useAppStore((s) => s.lecturesList);
+  const openImport = useAppStore((s) => s.openImport);
   const play = usePlayerStore((s) => s.play);
   const hoverBg = useColorModeValue('blackAlpha.100', 'whiteAlpha.100');
+  const emptyBoxBg = useColorModeValue('blackAlpha.50', 'whiteAlpha.50');
+  const emptyBorderColor = useColorModeValue('gray.200', 'whiteAlpha.200');
+
+  const loadCourseLectures = React.useCallback(async () => {
+    try {
+      const data = await window.api.getLectures(series.id);
+      setCourseLectures(data);
+    } catch (e) {
+      console.error('Failed to load lectures for series', series.id, e);
+    }
+  }, [series.id]);
+
+  useEffect(() => {
+    if (expanded || isSelected) {
+      loadCourseLectures();
+    }
+  }, [expanded, isSelected, loadCourseLectures]);
+
+  useEffect(() => {
+    if (isSelected) {
+      setExpanded(true);
+    }
+  }, [isSelected]);
+
+  useEffect(() => {
+    if (isSelected && lecturesList && lecturesList.length > 0) {
+      setCourseLectures(lecturesList);
+    }
+  }, [isSelected, lecturesList]);
+
+  // Effective list of lectures for this course series
+  const lectures =
+    isSelected && lecturesList && lecturesList.length > 0
+      ? lecturesList
+      : courseLectures.length > 0
+      ? courseLectures
+      : propLectures || [];
 
   const handleExpand = () => {
     setExpanded((prev) => !prev);
@@ -119,7 +177,29 @@ const SeriesItem: React.FC<{
             variant="ghost"
             onClick={(e) => e.stopPropagation()}
           />
-          <MenuList minW="130px" py={1}>
+          <MenuList minW="160px" py={1}>
+            <MenuItem
+              icon={<FiMusic />}
+              fontSize="xs"
+              onClick={() => openImport({ tab: 'audio', seriesId: series.id })}
+            >
+              Add Audio Lecture
+            </MenuItem>
+            <MenuItem
+              icon={<FiFileText />}
+              fontSize="xs"
+              onClick={() => openImport({ tab: 'pdf', seriesId: series.id })}
+            >
+              Add PDF Textbook / Matn
+            </MenuItem>
+            <MenuDivider />
+            <MenuItem
+              icon={<FiEdit2 />}
+              fontSize="xs"
+              onClick={() => onEditSeries(series)}
+            >
+              Edit Course
+            </MenuItem>
             <MenuItem
               icon={<FiTrash2 />}
               color="red.400"
@@ -133,7 +213,7 @@ const SeriesItem: React.FC<{
       </HStack>
 
       <Collapse in={expanded} animateOpacity>
-        <VStack align="stretch" pl={6} pr={2} py={1} spacing={0.5}>
+        <VStack align="stretch" pl={5} pr={2} py={1} spacing={0.5}>
           {lectures.map((lecture) => (
             <HStack
               key={lecture.id}
@@ -190,10 +270,74 @@ const SeriesItem: React.FC<{
               </Menu>
             </HStack>
           ))}
+
+          {/* Empty state: action buttons right inside the course */}
           {lectures.length === 0 && (
-            <Text fontSize="xs" color="gray.500" py={1} px={2}>
-              No lectures yet
-            </Text>
+            <Box
+              p={3}
+              my={1}
+              borderRadius="md"
+              bg={emptyBoxBg}
+              border="1px dashed"
+              borderColor={emptyBorderColor}
+              textAlign="center"
+            >
+              <Text fontSize="2xs" color="gray.400" mb={2}>
+                Course is empty. Add lectures or textbook:
+              </Text>
+              <HStack spacing={2} justify="center">
+                <Button
+                  size="xs"
+                  colorScheme="green"
+                  variant="solid"
+                  leftIcon={<FiMusic />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openImport({ tab: 'audio', seriesId: series.id });
+                  }}
+                >
+                  Add Audio
+                </Button>
+                <Button
+                  size="xs"
+                  colorScheme="green"
+                  variant="outline"
+                  leftIcon={<FiFileText />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openImport({ tab: 'pdf', seriesId: series.id });
+                  }}
+                >
+                  Add PDF
+                </Button>
+              </HStack>
+            </Box>
+          )}
+
+          {/* Course has lectures: quick addition buttons */}
+          {lectures.length > 0 && (
+            <HStack spacing={1} pt={1} justify="flex-end">
+              <Button
+                size="2xs"
+                variant="ghost"
+                color="green.400"
+                leftIcon={<FiPlus />}
+                onClick={() => openImport({ tab: 'audio', seriesId: series.id })}
+                title="Add audio to this course"
+              >
+                + Audio
+              </Button>
+              <Button
+                size="2xs"
+                variant="ghost"
+                color="green.400"
+                leftIcon={<FiPlus />}
+                onClick={() => openImport({ tab: 'pdf', seriesId: series.id })}
+                title="Add PDF to this course"
+              >
+                + PDF
+              </Button>
+            </HStack>
           )}
         </VStack>
       </Collapse>
@@ -213,8 +357,22 @@ export const Sidebar: React.FC = () => {
     loadLectures,
     setSearchOpen,
     setQuranOpen,
+    setSettingsOpen,
+    setTagManagerOpen,
+    isFocusMode,
+    selectLecture,
+    openImport,
   } = useAppStore();
 
+  const play = usePlayerStore((s) => s.play);
+  const selectedLectureId = useAppStore((s) => s.selectedLectureId);
+
+  const [seriesToDelete, setSeriesToDelete] = useState<string | null>(null);
+  const [lectureToDelete, setLectureToDelete] = useState<string | null>(null);
+  const [editingSeries, setEditingSeries] = useState<Series | null>(null);
+  const [standaloneLectures, setStandaloneLectures] = useState<Lecture[]>([]);
+
+  const hoverBg = useColorModeValue('blackAlpha.100', 'whiteAlpha.100');
   const { colorMode, toggleColorMode } = useColorMode();
   const toast = useToast();
 
@@ -233,31 +391,47 @@ export const Sidebar: React.FC = () => {
   const surfaceBg = useColorModeValue('gray.50', '#16213e');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
+  const loadStandaloneLectures = React.useCallback(async () => {
+    try {
+      const all = await window.api.getLectures();
+      setStandaloneLectures(all.filter((l) => !l.seriesId));
+    } catch (err) {
+      console.error('Failed to load standalone lectures:', err);
+    }
+  }, []);
+
   useEffect(() => {
     loadSeries();
-  }, [loadSeries]);
+    loadStandaloneLectures();
+  }, [loadSeries, loadStandaloneLectures]);
 
   useEffect(() => {
     if (selectedSeriesId) {
       loadLectures(selectedSeriesId);
     }
-  }, [selectedSeriesId, loadLectures]);
+    loadStandaloneLectures();
+  }, [selectedSeriesId, loadLectures, loadStandaloneLectures]);
 
-  const handleDeleteSeries = async (id: string) => {
+  const confirmDeleteSeries = async () => {
+    if (!seriesToDelete) return;
     try {
-      await window.api.deleteSeries(id);
+      await window.api.deleteSeries(seriesToDelete);
       toast({ title: 'Series deleted', status: 'info', duration: 2000, isClosable: true });
       loadSeries();
+      setSeriesToDelete(null);
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleDeleteLecture = async (id: string) => {
+  const confirmDeleteLecture = async () => {
+    if (!lectureToDelete) return;
     try {
-      await window.api.deleteLecture(id);
+      await window.api.deleteLecture(lectureToDelete);
       toast({ title: 'Lecture deleted', status: 'info', duration: 2000, isClosable: true });
       if (selectedSeriesId) loadLectures(selectedSeriesId);
+      loadStandaloneLectures();
+      setLectureToDelete(null);
     } catch (e) {
       console.error(e);
     }
@@ -266,8 +440,9 @@ export const Sidebar: React.FC = () => {
   return (
     <>
       <VStack
-        w="280px"
-        minW="280px"
+        w={isFocusMode ? '0px' : '280px'}
+        minW={isFocusMode ? '0px' : '280px'}
+        display={isFocusMode ? 'none' : 'flex'}
         h="100%"
         bg={surfaceBg}
         borderRight="1px solid"
@@ -374,6 +549,31 @@ export const Sidebar: React.FC = () => {
             <Text fontSize="xs">Quran Lookup</Text>
             <Badge fontSize="2xs" colorScheme="green" variant="subtle">Ctrl+Q</Badge>
           </Button>
+
+          <Button
+            variant="ghost"
+            justifyContent="space-between"
+            leftIcon={<FiTag />}
+            size="sm"
+            color="gray.400"
+            _hover={{ color: 'white', bg: 'whiteAlpha.100' }}
+            onClick={() => setTagManagerOpen(true)}
+          >
+            <Text fontSize="xs">Tags & Topics</Text>
+          </Button>
+
+          <Button
+            variant="ghost"
+            justifyContent="space-between"
+            leftIcon={<FiSettings />}
+            size="sm"
+            color="gray.400"
+            _hover={{ color: 'white', bg: 'whiteAlpha.100' }}
+            onClick={() => setSettingsOpen(true)}
+          >
+            <Text fontSize="xs">Settings</Text>
+            <Badge fontSize="2xs" colorScheme="gray" variant="subtle">Ctrl+,</Badge>
+          </Button>
         </VStack>
 
         <Divider borderColor={borderColor} />
@@ -426,11 +626,90 @@ export const Sidebar: React.FC = () => {
               }
               isSelected={selectedSeriesId === series.id}
               onSelect={() => selectSeries(series.id)}
-              onDeleteSeries={handleDeleteSeries}
-              onDeleteLecture={handleDeleteLecture}
+              onEditSeries={(s) => setEditingSeries(s)}
+              onDeleteSeries={(id) => setSeriesToDelete(id)}
+              onDeleteLecture={(id) => setLectureToDelete(id)}
             />
           ))}
-          {seriesList.length === 0 && (
+          {/* Standalone Lectures (Not part of a series) */}
+          {standaloneLectures.length > 0 && (
+            <Box pt={2}>
+              <Text
+                px={2}
+                py={1}
+                fontSize="3xs"
+                fontWeight="bold"
+                textTransform="uppercase"
+                letterSpacing="wider"
+                color="gray.400"
+              >
+                Standalone Lectures ({standaloneLectures.length})
+              </Text>
+              <VStack align="stretch" spacing={0.5}>
+                {standaloneLectures.map((lecture) => (
+                  <HStack
+                    key={lecture.id}
+                    py={1.5}
+                    px={2}
+                    cursor="pointer"
+                    borderRadius="md"
+                    bg={selectedLectureId === lecture.id ? 'whiteAlpha.200' : 'transparent'}
+                    _hover={{ bg: hoverBg }}
+                    spacing={2}
+                    justify="space-between"
+                  >
+                    <HStack
+                      spacing={2}
+                      flex={1}
+                      minW={0}
+                      onClick={() => {
+                        selectSeries(null);
+                        selectLecture(lecture.id);
+                        setView('study');
+                        if (lecture.audioPath) {
+                          play(lecture);
+                        }
+                      }}
+                    >
+                      <CompletionDot pct={lecture.completionPct} />
+                      <Text
+                        fontSize="xs"
+                        noOfLines={1}
+                        flex={1}
+                        color={selectedLectureId === lecture.id ? 'green.300' : 'gray.300'}
+                        fontWeight={selectedLectureId === lecture.id ? 'bold' : 'normal'}
+                      >
+                        {lecture.title}
+                      </Text>
+                    </HStack>
+
+                    <Menu>
+                      <MenuButton
+                        as={IconButton}
+                        aria-label="Lecture options"
+                        icon={<FiMoreVertical />}
+                        size="xs"
+                        variant="ghost"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <MenuList minW="120px" py={1}>
+                        <MenuItem
+                          icon={<FiTrash2 />}
+                          color="red.400"
+                          fontSize="xs"
+                          onClick={() => setLectureToDelete(lecture.id)}
+                        >
+                          Delete
+                        </MenuItem>
+                      </MenuList>
+                    </Menu>
+                  </HStack>
+                ))}
+              </VStack>
+            </Box>
+          )}
+
+          {seriesList.length === 0 && standaloneLectures.length === 0 && (
             <VStack py={6} px={4} spacing={2} textAlign="center">
               <Text fontSize="xs" color="gray.500">
                 No lecture series created yet.
@@ -457,15 +736,38 @@ export const Sidebar: React.FC = () => {
             size="sm"
             colorScheme="green"
             leftIcon={<FiPlus />}
-            onClick={onImportOpen}
+            onClick={() => openImport()}
           >
             Import Audio / PDF
           </Button>
         </Box>
       </VStack>
 
-      <ImportDialog isOpen={importOpen} onClose={onImportClose} />
       <CreateSeriesModal isOpen={newSeriesOpen} onClose={onNewSeriesClose} />
+      <CreateSeriesModal
+        isOpen={Boolean(editingSeries)}
+        onClose={() => setEditingSeries(null)}
+        series={editingSeries}
+      />
+
+      {/* Confirmation Dialogs */}
+      <ConfirmDialog
+        isOpen={Boolean(seriesToDelete)}
+        onClose={() => setSeriesToDelete(null)}
+        onConfirm={confirmDeleteSeries}
+        title="Delete Lecture Series"
+        message="Are you sure you want to delete this course series? Its lectures will be preserved as standalone items."
+        confirmText="Delete Series"
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(lectureToDelete)}
+        onClose={() => setLectureToDelete(null)}
+        onConfirm={confirmDeleteLecture}
+        title="Delete Lecture"
+        message="Are you sure you want to delete this lecture? All associated notes, bookmarks, and chapters will be permanently removed."
+        confirmText="Delete Lecture"
+      />
     </>
   );
 };

@@ -13,10 +13,11 @@ const config: ForgeConfig = {
     asar: true,
     name: 'ilm-studio',
     executableName: 'ilm-studio',
+    icon: './assets/icon',
     extraResource: ['./assets/quran.db'],
   },
   makers: [
-    new MakerZIP({}, ['linux']),
+    new MakerZIP({}, ['linux', 'win32']),
     new MakerDeb({
       options: {
         maintainer: 'Mubarek',
