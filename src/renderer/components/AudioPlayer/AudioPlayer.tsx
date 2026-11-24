@@ -82,6 +82,9 @@ export const AudioPlayer: React.FC = () => {
   const accumulatedActiveSecondsRef = useRef<number>(0);
   const lastTickTimeRef = useRef<number>(0);
   const initialSeekTargetRef = useRef<number>(0);
+  const isDraggingRef = useRef<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragValue, setDragValue] = useState<number>(0);
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const toast = useToast();
@@ -466,8 +469,8 @@ export const AudioPlayer: React.FC = () => {
       const rawPos = howl.seek();
       const pos = typeof rawPos === 'number' && isFinite(rawPos) ? rawPos : 0;
 
-      // When minimized or hidden in background, update store currentTime from interval
-      if (document.hidden) {
+      // When minimized or hidden in background, update store currentTime from interval (if not scrubbing)
+      if (!isDraggingRef.current && document.hidden) {
         usePlayerStore.getState().setCurrentTime(pos);
       }
 
@@ -504,7 +507,9 @@ export const AudioPlayer: React.FC = () => {
         }
       }
 
-      usePlayerStore.getState().setCurrentTime(pos);
+      if (!isDraggingRef.current) {
+        usePlayerStore.getState().setCurrentTime(pos);
+      }
     }
     if (!document.hidden) {
       rafRef.current = requestAnimationFrame(updateProgress);
@@ -576,6 +581,28 @@ export const AudioPlayer: React.FC = () => {
       persistAudioPosition(currentLecture.id, currentLecture.seriesId, safeVal);
     }
   };
+
+  const handleSliderChangeStart = (val: number) => {
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    setDragValue(val);
+  };
+
+  const handleSliderChange = (val: number) => {
+    setDragValue(val);
+  };
+
+  const handleSliderChangeEnd = (val: number) => {
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    handleSeek(val);
+  };
+
+  const displayTime = isDragging
+    ? dragValue
+    : typeof currentTime === 'number' && isFinite(currentTime) && currentTime >= 0
+    ? currentTime
+    : 0;
 
   const handleSkipBack = () => {
     const cur = typeof currentTime === 'number' && isFinite(currentTime) ? currentTime : 0;
@@ -721,11 +748,13 @@ export const AudioPlayer: React.FC = () => {
 
         <Slider
           aria-label="Audio progress"
-          value={typeof currentTime === 'number' && isFinite(currentTime) && currentTime >= 0 ? currentTime : 0}
+          value={displayTime}
           min={0}
           max={typeof duration === 'number' && isFinite(duration) && duration > 0 ? duration : 1}
           step={0.1}
-          onChange={handleSeek}
+          onChangeStart={handleSliderChangeStart}
+          onChange={handleSliderChange}
+          onChangeEnd={handleSliderChangeEnd}
           isDisabled={!currentLecture?.audioPath || !isFinite(duration) || duration <= 0}
           size="sm"
           colorScheme="green"
@@ -753,7 +782,7 @@ export const AudioPlayer: React.FC = () => {
           </HStack>
           <HStack spacing={2} mt={0.5}>
             <Text fontSize="2xs" color="gray.400">
-              {formatTime(currentTime)} / {formatTime(duration)}
+              {formatTime(displayTime)} / {formatTime(duration)}
             </Text>
             {isLooping && loopA !== null && loopB !== null && (
               <Badge colorScheme="green" fontSize="2xs">
