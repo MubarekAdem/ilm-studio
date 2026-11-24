@@ -50,6 +50,16 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRafRef = useRef<number | null>(null);
   const isProgrammaticScrollRef = useRef(false);
+  const programmaticTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isInputFocusedRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      if (programmaticTimerRef.current) {
+        clearTimeout(programmaticTimerRef.current);
+      }
+    };
+  }, []);
 
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,10 +107,12 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
 
   // Jump to page helper
   const goToPage = useCallback(
-    (page: number, smooth: boolean = true) => {
+    (page: number, smooth: boolean = false) => {
       const p = Math.max(1, Math.min(page, totalPages || 1));
       setCurrentPage(p);
-      setPageInput(String(p));
+      if (!isInputFocusedRef.current) {
+        setPageInput(String(p));
+      }
       setCurrentPdfPage(p);
       if (pdfPath) {
         try {
@@ -116,11 +128,23 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         if (container) {
           const el = container.querySelector<HTMLElement>(`[data-page-number="${p}"]`);
           if (el) {
+            if (programmaticTimerRef.current) {
+              clearTimeout(programmaticTimerRef.current);
+            }
             isProgrammaticScrollRef.current = true;
-            el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
-            setTimeout(() => {
+
+            const containerRect = container.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            const targetScrollTop = container.scrollTop + (elRect.top - containerRect.top) - 16;
+
+            container.scrollTo({
+              top: Math.max(0, targetScrollTop),
+              behavior: smooth ? 'smooth' : 'auto',
+            });
+
+            programmaticTimerRef.current = setTimeout(() => {
               isProgrammaticScrollRef.current = false;
-            }, smooth ? 500 : 50);
+            }, smooth ? 600 : 150);
           }
         }
       } else {
@@ -196,7 +220,10 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
             if (!cancelled && initialPage > 1 && containerRef.current) {
               const el = containerRef.current.querySelector<HTMLElement>(`[data-page-number="${initialPage}"]`);
               if (el) {
-                el.scrollIntoView({ behavior: 'auto', block: 'start' });
+                const containerRect = containerRef.current.getBoundingClientRect();
+                const elRect = el.getBoundingClientRect();
+                const targetScrollTop = containerRef.current.scrollTop + (elRect.top - containerRect.top) - 16;
+                containerRef.current.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'auto' });
               }
             }
           }, 150);
@@ -273,7 +300,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   // Handle external jump request (e.g. from clicking page chip in notes)
   useEffect(() => {
     if (targetPdfPage !== null && targetPdfPage >= 1 && targetPdfPage <= totalPages) {
-      goToPage(targetPdfPage, true);
+      goToPage(targetPdfPage, false);
       jumpToPdfPage(null as any);
     }
   }, [targetPdfPage, totalPages, goToPage, jumpToPdfPage]);
@@ -296,11 +323,16 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         bestPage = parseInt(el.getAttribute('data-page-number') || '1', 10);
         break;
       }
+      if (rect.top > targetY) {
+        break;
+      }
     }
 
     if (bestPage && bestPage !== currentPage) {
       setCurrentPage(bestPage);
-      setPageInput(String(bestPage));
+      if (!isInputFocusedRef.current) {
+        setPageInput(String(bestPage));
+      }
       setCurrentPdfPage(bestPage);
       if (pdfPath) {
         try {
@@ -410,10 +442,32 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
     setRotation((r) => (r + 90) % 360);
   };
 
-  const handlePageInputKeyDown = (e: React.KeyboardEvent) => {
+  const handlePageInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       const num = parseInt(pageInput, 10);
-      if (!isNaN(num)) goToPage(num);
+      if (!isNaN(num) && num >= 1) {
+        goToPage(num, false);
+      } else {
+        setPageInput(String(currentPage));
+      }
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setPageInput(String(currentPage));
+      (e.target as HTMLInputElement).blur();
+    }
+  };
+
+  const handlePageInputBlur = () => {
+    isInputFocusedRef.current = false;
+    const num = parseInt(pageInput, 10);
+    if (!isNaN(num) && num >= 1 && num <= totalPages) {
+      if (num !== currentPage) {
+        goToPage(num, false);
+      }
+    } else {
+      setPageInput(String(currentPage));
     }
   };
 
@@ -639,26 +693,35 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
               size="sm"
               variant="ghost"
               isDisabled={currentPage <= 1}
-              onClick={() => goToPage(currentPage - 1)}
+              onClick={() => goToPage(currentPage - 1, false)}
             />
           </Tooltip>
 
           <HStack spacing={1}>
-            <Input
-              value={pageInput}
-              onChange={(e) => setPageInput(e.target.value)}
-              onKeyDown={handlePageInputKeyDown}
-              onBlur={() => {
-                const num = parseInt(pageInput, 10);
-                if (!isNaN(num)) goToPage(num);
-                else setPageInput(String(currentPage));
-              }}
-              size="sm"
-              w="48px"
-              textAlign="center"
-              variant="filled"
-            />
-            <Text fontSize="xs" color="gray.400">
+            <Tooltip label="Type page number & press Enter">
+              <Input
+                value={pageInput}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setPageInput(val);
+                }}
+                onFocus={(e) => {
+                  isInputFocusedRef.current = true;
+                  e.target.select();
+                }}
+                onKeyDown={handlePageInputKeyDown}
+                onBlur={handlePageInputBlur}
+                size="sm"
+                w="56px"
+                px={1}
+                fontSize="xs"
+                fontWeight="semibold"
+                textAlign="center"
+                variant="filled"
+                aria-label="Current page number"
+              />
+            </Tooltip>
+            <Text fontSize="xs" color="gray.400" userSelect="none">
               / {totalPages}
             </Text>
           </HStack>
@@ -670,7 +733,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
               size="sm"
               variant="ghost"
               isDisabled={currentPage >= totalPages}
-              onClick={() => goToPage(currentPage + 1)}
+              onClick={() => goToPage(currentPage + 1, false)}
             />
           </Tooltip>
 
@@ -746,12 +809,13 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         pdfDoc={pdfDoc}
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        onJumpToPage={(p) => goToPage(p, true)}
+        onJumpToPage={(p) => goToPage(p, false)}
       />
 
       {/* Continuous Global Scroll / Single Page Area */}
       <Box
         ref={containerRef}
+        position="relative"
         flex={1}
         overflowY="auto"
         overflowX="auto"
@@ -815,7 +879,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         isOpen={isOutlineOpen}
         onClose={() => setIsOutlineOpen(false)}
         outline={outline}
-        onSelectPage={(p) => goToPage(p, true)}
+        onSelectPage={(p) => goToPage(p, false)}
         currentPage={currentPage}
       />
     </VStack>
