@@ -76,6 +76,7 @@ function formatTime(seconds: number): string {
 
 export const AudioPlayer: React.FC = () => {
   const howlRef = useRef<Howl | null>(null);
+  const activeSoundIdRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastSaveTimeRef = useRef<number>(0);
   const accumulatedActiveSecondsRef = useRef<number>(0);
@@ -84,6 +85,22 @@ export const AudioPlayer: React.FC = () => {
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
   const [newChapterTitle, setNewChapterTitle] = useState('');
   const toast = useToast();
+
+  /** Ensure Howl never has more than 1 sound instance playing in parallel (prevent echoing) */
+  const ensureSingleSound = (howl: Howl) => {
+    const sounds = (howl as any)._sounds;
+    if (Array.isArray(sounds) && sounds.length > 1) {
+      for (let i = 1; i < sounds.length; i++) {
+        try {
+          if (sounds[i]?._node) {
+            sounds[i]._node.pause();
+            sounds[i]._node.src = '';
+          }
+        } catch {}
+      }
+      sounds.length = 1;
+    }
+  };
 
   const {
     isPlaying,
@@ -307,6 +324,7 @@ export const AudioPlayer: React.FC = () => {
       src: [audioSrc],
       format: [ext],
       html5: true,
+      pool: 1,
       volume: volume,
       rate: playbackSpeed,
       onload: () => {
@@ -317,23 +335,20 @@ export const AudioPlayer: React.FC = () => {
 
         if (initialPos > 0) {
           try {
-            const sound = (howl as any)._sounds?.[0];
-            if (sound?._node && isFinite(sound._node.duration) && sound._node.duration > 0) {
-              sound._node.currentTime = Math.min(sound._node.duration, initialPos);
-            } else {
-              howl.seek(initialPos);
-            }
+            howl.seek(initialPos);
           } catch (e) {
             console.warn('[AudioPlayer] initial seek warning:', e);
           }
         }
         const el = getAudioElement();
-        if (el) applyEqPreset(el, eqPreset);
+        if (el && eqPreset !== 'normal') applyEqPreset(el, eqPreset);
 
-        // If player state is set to playing, start Howler immediately
+        // If player state is set to playing, start single sound
         if (usePlayerStore.getState().isPlaying && !howl.playing()) {
           try {
-            howl.play();
+            ensureSingleSound(howl);
+            const newId = howl.play(activeSoundIdRef.current || undefined);
+            activeSoundIdRef.current = typeof newId === 'number' ? newId : null;
           } catch (e) {
             console.warn('[AudioPlayer] auto-play on load error:', e);
           }
@@ -345,31 +360,28 @@ export const AudioPlayer: React.FC = () => {
       onplayerror: (_id, err) => {
         console.error('[AudioPlayer] Howler play error:', err);
         howl.once('unlock', () => {
-          howl.play();
+          ensureSingleSound(howl);
+          const newId = howl.play(activeSoundIdRef.current || undefined);
+          activeSoundIdRef.current = typeof newId === 'number' ? newId : null;
         });
       },
       onplay: () => {
         if (initialSeekTargetRef.current > 0) {
           const target = initialSeekTargetRef.current;
+          initialSeekTargetRef.current = 0;
           try {
             const cur = howl.seek();
             if (typeof cur === 'number' && Math.abs(cur - target) > 1.5) {
-              const sound = (howl as any)._sounds?.[0];
-              if (sound?._node) {
-                sound._node.currentTime = target;
-              } else {
-                howl.seek(target);
-              }
+              howl.seek(target);
               usePlayerStore.getState().seek(target);
             }
           } catch (e) {
             console.warn('[AudioPlayer] onplay seek ensure:', e);
           }
-          initialSeekTargetRef.current = 0;
         }
         updateProgress();
         const el = getAudioElement();
-        if (el) applyEqPreset(el, eqPreset);
+        if (el && eqPreset !== 'normal') applyEqPreset(el, eqPreset);
       },
       onend: () => {
         handleLectureEnd();
@@ -389,21 +401,29 @@ export const AudioPlayer: React.FC = () => {
           }
         } catch {}
       }
+      activeSoundIdRef.current = null;
       howl.unload();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLecture?.id, currentLecture?.audioPath]);
 
-  // Sync play/pause state
+  // Sync play/pause state - Single Source of Truth for Howler
   useEffect(() => {
     const howl = howlRef.current;
     if (!howl) return;
 
-    if (isPlaying && !howl.playing()) {
-      howl.play();
-    } else if (!isPlaying && howl.playing()) {
-      howl.pause();
+    if (isPlaying) {
+      ensureSingleSound(howl);
+      if (!howl.playing()) {
+        const sid = activeSoundIdRef.current;
+        const newId = howl.play(sid || undefined);
+        activeSoundIdRef.current = typeof newId === 'number' ? newId : null;
+      }
+    } else {
+      if (howl.playing()) {
+        howl.pause(activeSoundIdRef.current || undefined);
+      }
     }
   }, [isPlaying]);
 
@@ -470,7 +490,6 @@ export const AudioPlayer: React.FC = () => {
     if (!currentLecture) return;
     if (isPlaying) {
       pause();
-      howlRef.current?.pause();
       flushStudySession();
       lastTickTimeRef.current = 0;
       if (howlRef.current) {
@@ -484,7 +503,6 @@ export const AudioPlayer: React.FC = () => {
     } else {
       lastTickTimeRef.current = Date.now();
       play();
-      howlRef.current?.play();
     }
   };
 
@@ -494,15 +512,15 @@ export const AudioPlayer: React.FC = () => {
     seek(safeVal);
     const howl = howlRef.current;
     if (howl) {
+      ensureSingleSound(howl);
       try {
+        howl.seek(safeVal);
         const sound = (howl as any)._sounds?.[0];
         if (sound?._node && isFinite(sound._node.duration) && sound._node.duration > 0) {
           const clamped = Math.min(sound._node.duration, safeVal);
           if (isFinite(clamped)) {
             sound._node.currentTime = clamped;
           }
-        } else {
-          howl.seek(safeVal);
         }
       } catch (err) {
         console.warn('[AudioPlayer] Seek error safely caught:', err);

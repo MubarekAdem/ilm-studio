@@ -16,6 +16,8 @@ const nodeMap = new WeakMap<HTMLAudioElement, EqNodeBundle>();
  */
 export function applyEqPreset(audioEl: HTMLAudioElement | null, preset: EqPreset): void {
   if (!audioEl) return;
+  // If preset is normal and no bundle exists yet, avoid hooking up Web Audio (zero latency direct playback)
+  if (preset === 'normal' && !nodeMap.has(audioEl)) return;
 
   try {
     let bundle = nodeMap.get(audioEl);
