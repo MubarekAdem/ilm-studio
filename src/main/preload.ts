@@ -6,6 +6,7 @@ import type {
   Note,
   Tag,
   Bookmark,
+  PdfComment,
   Chapter,
   StudySession,
   ReviewSchedule,
@@ -76,6 +77,16 @@ const api = {
     ipcRenderer.invoke(IPC_CHANNELS.DB_CREATE_BOOKMARK, data),
   deleteBookmark: (id: string): Promise<boolean> =>
     ipcRenderer.invoke(IPC_CHANNELS.DB_DELETE_BOOKMARK, id),
+
+  // ── PDF Comments ────────────────────────────────────────────────────────
+  getPdfComments: (pdfPath?: string, lectureId?: string): Promise<PdfComment[]> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_GET_PDF_COMMENTS, pdfPath, lectureId),
+  createPdfComment: (data: Omit<PdfComment, 'id' | 'createdAt' | 'updatedAt'>): Promise<PdfComment> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_CREATE_PDF_COMMENT, data),
+  updatePdfComment: (id: string, data: Partial<PdfComment>): Promise<PdfComment | undefined> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_UPDATE_PDF_COMMENT, id, data),
+  deletePdfComment: (id: string): Promise<boolean> =>
+    ipcRenderer.invoke(IPC_CHANNELS.DB_DELETE_PDF_COMMENT, id),
 
   // ── Chapters ─────────────────────────────────────────────────────────
   getChapters: (lectureId: string): Promise<Chapter[]> =>

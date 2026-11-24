@@ -57,6 +57,24 @@ export interface Bookmark {
   createdAt: string;
 }
 
+export type PdfCommentColor = 'amber' | 'emerald' | 'sky' | 'rose' | 'violet';
+export type PdfCommentFontStyle = 'handwriting' | 'sans';
+
+export interface PdfComment {
+  id: string;
+  pdfPath: string;
+  lectureId: string | null;
+  page: number;
+  xPct: number;
+  yPct: number;
+  content: string;
+  color: PdfCommentColor;
+  fontStyle: PdfCommentFontStyle;
+  drawingData?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Chapter {
   id: string;
   lectureId: string;
@@ -150,6 +168,10 @@ export const IPC_CHANNELS = {
   DB_GET_BOOKMARKS: 'db:get-bookmarks',
   DB_CREATE_BOOKMARK: 'db:create-bookmark',
   DB_DELETE_BOOKMARK: 'db:delete-bookmark',
+  DB_GET_PDF_COMMENTS: 'db:get-pdf-comments',
+  DB_CREATE_PDF_COMMENT: 'db:create-pdf-comment',
+  DB_UPDATE_PDF_COMMENT: 'db:update-pdf-comment',
+  DB_DELETE_PDF_COMMENT: 'db:delete-pdf-comment',
   DB_GET_CHAPTERS: 'db:get-chapters',
   DB_CREATE_CHAPTER: 'db:create-chapter',
   DB_DELETE_CHAPTER: 'db:delete-chapter',

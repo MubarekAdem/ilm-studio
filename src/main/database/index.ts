@@ -10,6 +10,7 @@ import type {
   Tag,
   NoteTag,
   Bookmark,
+  PdfComment,
   Chapter,
   StudySession,
   ReviewSchedule,
@@ -132,6 +133,23 @@ function createTables(): void {
       key   TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS pdf_comments (
+      id          TEXT PRIMARY KEY,
+      pdfPath     TEXT NOT NULL,
+      lectureId   TEXT,
+      page        INTEGER NOT NULL,
+      xPct        REAL NOT NULL DEFAULT 50,
+      yPct        REAL NOT NULL DEFAULT 50,
+      content     TEXT NOT NULL DEFAULT '',
+      color       TEXT NOT NULL DEFAULT 'amber',
+      fontStyle   TEXT NOT NULL DEFAULT 'handwriting',
+      drawingData TEXT,
+      createdAt   TEXT NOT NULL DEFAULT (datetime('now')),
+      updatedAt   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_pdf_comments_path ON pdf_comments(pdfPath);
+    CREATE INDEX IF NOT EXISTS idx_pdf_comments_lecture ON pdf_comments(lectureId);
   `);
 }
 
@@ -331,6 +349,75 @@ export function createBookmark(data: Omit<Bookmark, 'id' | 'createdAt'>): Bookma
 
 export function deleteBookmark(id: string): boolean {
   return db.prepare('DELETE FROM bookmarks WHERE id = ?').run(id).changes > 0;
+}
+
+// ── PDF Comments ────────────────────────────────────────────────────────
+
+export function getPdfComments(pdfPath?: string, lectureId?: string): PdfComment[] {
+  if (pdfPath && lectureId) {
+    return db.prepare('SELECT * FROM pdf_comments WHERE pdfPath = ? OR lectureId = ? ORDER BY page ASC, createdAt ASC').all(pdfPath, lectureId) as PdfComment[];
+  }
+  if (pdfPath) {
+    return db.prepare('SELECT * FROM pdf_comments WHERE pdfPath = ? ORDER BY page ASC, createdAt ASC').all(pdfPath) as PdfComment[];
+  }
+  if (lectureId) {
+    return db.prepare('SELECT * FROM pdf_comments WHERE lectureId = ? ORDER BY page ASC, createdAt ASC').all(lectureId) as PdfComment[];
+  }
+  return db.prepare('SELECT * FROM pdf_comments ORDER BY page ASC, createdAt ASC').all() as PdfComment[];
+}
+
+export function createPdfComment(data: Omit<PdfComment, 'id' | 'createdAt' | 'updatedAt'>): PdfComment {
+  const id = uuid();
+  const ts = now();
+  db.prepare(`
+    INSERT INTO pdf_comments (id, pdfPath, lectureId, page, xPct, yPct, content, color, fontStyle, drawingData, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    data.pdfPath,
+    data.lectureId || null,
+    data.page,
+    data.xPct,
+    data.yPct,
+    data.content || '',
+    data.color || 'amber',
+    data.fontStyle || 'handwriting',
+    data.drawingData || null,
+    ts,
+    ts
+  );
+  return { id, ...data, createdAt: ts, updatedAt: ts };
+}
+
+export function updatePdfComment(id: string, data: Partial<PdfComment>): PdfComment | undefined {
+  const existing = db.prepare('SELECT * FROM pdf_comments WHERE id = ?').get(id) as PdfComment | undefined;
+  if (!existing) return undefined;
+  const ts = now();
+  const updated: PdfComment = {
+    ...existing,
+    ...data,
+    updatedAt: ts,
+  };
+  db.prepare(`
+    UPDATE pdf_comments
+    SET page = ?, xPct = ?, yPct = ?, content = ?, color = ?, fontStyle = ?, drawingData = ?, updatedAt = ?
+    WHERE id = ?
+  `).run(
+    updated.page,
+    updated.xPct,
+    updated.yPct,
+    updated.content,
+    updated.color,
+    updated.fontStyle,
+    updated.drawingData || null,
+    ts,
+    id
+  );
+  return updated;
+}
+
+export function deletePdfComment(id: string): boolean {
+  return db.prepare('DELETE FROM pdf_comments WHERE id = ?').run(id).changes > 0;
 }
 
 // ── Chapters ────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   Box,
   HStack,
@@ -31,14 +31,17 @@ import {
   FiLayers,
   FiSquare,
   FiBookOpen,
+  FiMessageSquare,
 } from 'react-icons/fi';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import { useAppStore } from '../../stores/appStore';
 import { PdfOutlineDrawer, OutlineItem } from './PdfOutlineDrawer';
 import { PdfSearchBar } from './PdfSearchBar';
+import { PdfCommentsDrawer } from './PdfCommentsDrawer';
 import { PdfPageItem, ColorFilterMode } from './PdfPageItem';
 import { toMediaUrl } from '../../utils/mediaUrl';
+import type { PdfComment } from '../../../shared/types';
 
 interface PdfViewerProps {
   pdfPath: string | null;
@@ -100,6 +103,163 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   const selectedLectureId = useAppStore((s) => s.selectedLectureId);
   const toast = useToast();
 
+  // PDF Sticky Comments / Notes
+  const [comments, setComments] = useState<PdfComment[]>([]);
+  const [isCommentMode, setIsCommentMode] = useState<boolean>(false);
+  const [isCommentsDrawerOpen, setIsCommentsDrawerOpen] = useState<boolean>(false);
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
+
+  // Load comments
+  const loadComments = useCallback(async () => {
+    if (!pdfPath) {
+      setComments([]);
+      return;
+    }
+    const cacheKey = `ilm_pdf_comments_${pdfPath}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setComments(JSON.parse(cached));
+      }
+    } catch {}
+
+    try {
+      const dbComments = await window.api.getPdfComments(pdfPath, selectedLectureId || undefined);
+      if (dbComments) {
+        setComments(dbComments);
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(dbComments));
+        } catch {}
+      }
+    } catch (e) {
+      console.error('Failed to load PDF comments from DB:', e);
+    }
+  }, [pdfPath, selectedLectureId]);
+
+  useEffect(() => {
+    loadComments();
+  }, [loadComments]);
+
+  // Comments grouped by page for instant O(1) lookup
+  const commentsByPage = useMemo(() => {
+    const map = new Map<number, PdfComment[]>();
+    for (const c of comments) {
+      const list = map.get(c.page) || [];
+      list.push(c);
+      map.set(c.page, list);
+    }
+    return map;
+  }, [comments]);
+
+  const handleAddComment = useCallback(
+    async (page: number, xPct: number, yPct: number) => {
+      if (!pdfPath) return;
+      const newCommentData: Omit<PdfComment, 'id' | 'createdAt' | 'updatedAt'> = {
+        pdfPath,
+        lectureId: selectedLectureId || null,
+        page,
+        xPct,
+        yPct,
+        content: '',
+        color: 'amber',
+        fontStyle: 'handwriting',
+        drawingData: null,
+      };
+
+      const tempId = crypto.randomUUID();
+      const nowIso = new Date().toISOString();
+      const optimisticComment: PdfComment = {
+        id: tempId,
+        ...newCommentData,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      };
+
+      setComments((prev) => {
+        const updated = [...prev, optimisticComment];
+        try {
+          localStorage.setItem(`ilm_pdf_comments_${pdfPath}`, JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+      setActiveCommentId(tempId);
+      setIsCommentMode(false);
+
+      toast({
+        title: `Note pinned to Page ${page}`,
+        description: 'Type your reflection or sketch directly on the note card.',
+        status: 'success',
+        duration: 2500,
+        isClosable: true,
+      });
+
+      try {
+        const saved = await window.api.createPdfComment(newCommentData);
+        if (saved) {
+          setComments((prev) => prev.map((c) => (c.id === tempId ? saved : c)));
+          setActiveCommentId(saved.id);
+        }
+      } catch (err) {
+        console.error('Failed to save comment in DB:', err);
+      }
+    },
+    [pdfPath, selectedLectureId, toast]
+  );
+
+  const handleUpdateComment = useCallback(
+    async (id: string, data: Partial<PdfComment>) => {
+      setComments((prev) => {
+        const updated = prev.map((c) =>
+          c.id === id ? { ...c, ...data, updatedAt: new Date().toISOString() } : c
+        );
+        if (pdfPath) {
+          try {
+            localStorage.setItem(`ilm_pdf_comments_${pdfPath}`, JSON.stringify(updated));
+          } catch {}
+        }
+        return updated;
+      });
+
+      try {
+        await window.api.updatePdfComment(id, data);
+      } catch (err) {
+        console.error('Failed to update comment in DB:', err);
+      }
+    },
+    [pdfPath]
+  );
+
+  const handleDeleteComment = useCallback(
+    async (id: string) => {
+      setComments((prev) => {
+        const updated = prev.filter((c) => c.id !== id);
+        if (pdfPath) {
+          try {
+            localStorage.setItem(`ilm_pdf_comments_${pdfPath}`, JSON.stringify(updated));
+          } catch {}
+        }
+        return updated;
+      });
+      if (activeCommentId === id) {
+        setActiveCommentId(null);
+      }
+
+      toast({
+        title: 'Note deleted',
+        status: 'info',
+        duration: 2000,
+        isClosable: true,
+      });
+
+      try {
+        await window.api.deletePdfComment(id);
+      } catch (err) {
+        console.error('Failed to delete comment in DB:', err);
+      }
+    },
+    [activeCommentId, pdfPath, toast]
+  );
+
   const placeholderColor = useColorModeValue('gray.400', 'gray.500');
   const toolbarBg = useColorModeValue('#f7f7f7', '#141414');
   const popoverBg = useColorModeValue('#ffffff', '#1f1f1f');
@@ -154,6 +314,14 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
       }
     },
     [totalPages, setCurrentPdfPage, pdfPath, selectedLectureId, viewMode]
+  );
+
+  const handleSelectComment = useCallback(
+    (comment: PdfComment) => {
+      goToPage(comment.page, false);
+      setActiveCommentId(comment.id);
+    },
+    [goToPage]
   );
 
   // Load PDF document when path changes
@@ -357,6 +525,12 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   // Keyboard navigation for PDF reading
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+    if (e.key === 'Escape' && isCommentMode) {
+      e.preventDefault();
+      setIsCommentMode(false);
+      return;
+    }
 
     if (e.key === 'ArrowRight' || e.key === 'PageDown') {
       e.preventDefault();
@@ -686,6 +860,34 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
 
           <Box w="1px" h="18px" bg="whiteAlpha.200" mx={0.5} />
 
+          <Tooltip label={isCommentMode ? 'Exit note placing mode (Esc)' : 'Add note / handwriting on page'}>
+            <IconButton
+              aria-label="Add note on PDF"
+              icon={<FiEdit3 />}
+              size="sm"
+              variant={isCommentMode ? 'solid' : 'ghost'}
+              colorScheme={isCommentMode ? 'green' : undefined}
+              onClick={() => setIsCommentMode((v) => !v)}
+            />
+          </Tooltip>
+
+          <Tooltip label="View and manage textbook notes">
+            <Button
+              size="sm"
+              variant={isCommentsDrawerOpen ? 'solid' : 'ghost'}
+              colorScheme={comments.length > 0 ? 'green' : undefined}
+              leftIcon={<FiMessageSquare />}
+              onClick={() => setIsCommentsDrawerOpen(true)}
+              px={2}
+              fontSize="xs"
+              h="30px"
+            >
+              Notes {comments.length > 0 && `(${comments.length})`}
+            </Button>
+          </Tooltip>
+
+          <Box w="1px" h="18px" bg="whiteAlpha.200" mx={0.5} />
+
           <Tooltip label="Previous page (Arrow Left / Page Up)">
             <IconButton
               aria-label="Previous page"
@@ -804,6 +1006,40 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         </HStack>
       </HStack>
 
+      {/* Active Note / Comment Mode Banner */}
+      {isCommentMode && (
+        <Box
+          position="absolute"
+          top="50px"
+          left="50%"
+          transform="translateX(-50%)"
+          zIndex={999}
+          bg="green.500"
+          color="white"
+          px={4}
+          py={1.5}
+          borderRadius="full"
+          boxShadow="0 4px 16px rgba(16, 185, 129, 0.45)"
+          display="flex"
+          alignItems="center"
+          gap={2}
+          fontSize="xs"
+          fontWeight="semibold"
+          userSelect="none"
+        >
+          <Text>✍️ Note Mode: Click anywhere on any page to drop a note</Text>
+          <Button
+            size="2xs"
+            colorScheme="whiteAlpha"
+            variant="solid"
+            borderRadius="full"
+            onClick={() => setIsCommentMode(false)}
+          >
+            Cancel (Esc)
+          </Button>
+        </Box>
+      )}
+
       {/* In-PDF Search Bar */}
       <PdfSearchBar
         pdfDoc={pdfDoc}
@@ -855,6 +1091,13 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
                 defaultHeight={defaultHeight}
                 containerRef={containerRef}
                 onMouseUp={handlePageMouseUp}
+                comments={commentsByPage.get(pageNum)}
+                isCommentMode={isCommentMode}
+                activeCommentId={activeCommentId}
+                onAddComment={handleAddComment}
+                onUpdateComment={handleUpdateComment}
+                onDeleteComment={handleDeleteComment}
+                onSelectComment={setActiveCommentId}
               />
             ))
           ) : (
@@ -869,6 +1112,13 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
               defaultHeight={defaultHeight}
               containerRef={containerRef}
               onMouseUp={handlePageMouseUp}
+              comments={commentsByPage.get(currentPage)}
+              isCommentMode={isCommentMode}
+              activeCommentId={activeCommentId}
+              onAddComment={handleAddComment}
+              onUpdateComment={handleUpdateComment}
+              onDeleteComment={handleDeleteComment}
+              onSelectComment={setActiveCommentId}
             />
           )
         ) : null}
@@ -881,6 +1131,16 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         outline={outline}
         onSelectPage={(p) => goToPage(p, false)}
         currentPage={currentPage}
+      />
+
+      {/* Textbook Comments & Annotations Drawer */}
+      <PdfCommentsDrawer
+        isOpen={isCommentsDrawerOpen}
+        onClose={() => setIsCommentsDrawerOpen(false)}
+        comments={comments}
+        onSelectComment={handleSelectComment}
+        onDeleteComment={handleDeleteComment}
+        onEnterCommentMode={() => setIsCommentMode(true)}
       />
     </VStack>
   );

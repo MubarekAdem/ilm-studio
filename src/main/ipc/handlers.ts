@@ -7,6 +7,7 @@ import type {
   Lecture,
   Note,
   Bookmark,
+  PdfComment,
   Chapter,
   StudySession,
   AppSettings,
@@ -116,6 +117,24 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.DB_DELETE_BOOKMARK, (_event, id: string) => {
     return database.deleteBookmark(id);
+  });
+
+  // ── PDF Comments ────────────────────────────────────────────────────────
+
+  ipcMain.handle(IPC_CHANNELS.DB_GET_PDF_COMMENTS, (_event, pdfPath?: string, lectureId?: string) => {
+    return database.getPdfComments(pdfPath, lectureId);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_CREATE_PDF_COMMENT, (_event, data: Omit<PdfComment, 'id' | 'createdAt' | 'updatedAt'>) => {
+    return database.createPdfComment(data);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_UPDATE_PDF_COMMENT, (_event, id: string, data: Partial<PdfComment>) => {
+    return database.updatePdfComment(id, data);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.DB_DELETE_PDF_COMMENT, (_event, id: string) => {
+    return database.deletePdfComment(id);
   });
 
   // ── Chapters ─────────────────────────────────────────────────────────

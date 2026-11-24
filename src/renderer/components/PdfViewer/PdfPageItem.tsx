@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Box, Text } from '@chakra-ui/react';
 import * as pdfjsLib from 'pdfjs-dist';
+import { PdfCommentPin } from './PdfCommentPin';
+import type { PdfComment } from '../../../shared/types';
 
 export type ColorFilterMode = 'normal' | 'dark' | 'sepia';
 
@@ -14,6 +16,13 @@ export interface PdfPageItemProps {
   defaultHeight: number;
   containerRef: React.RefObject<HTMLDivElement>;
   onMouseUp: (pageNumber: number) => void;
+  comments?: PdfComment[];
+  isCommentMode?: boolean;
+  activeCommentId?: string | null;
+  onAddComment?: (page: number, xPct: number, yPct: number) => void;
+  onUpdateComment?: (id: string, data: Partial<PdfComment>) => void;
+  onDeleteComment?: (id: string) => void;
+  onSelectComment?: (id: string | null) => void;
 }
 
 const getCanvasFilter = (filter: ColorFilterMode) => {
@@ -50,6 +59,13 @@ const PdfPageItemComponent: React.FC<PdfPageItemProps> = ({
   defaultHeight,
   containerRef,
   onMouseUp,
+  comments,
+  isCommentMode,
+  activeCommentId,
+  onAddComment,
+  onUpdateComment,
+  onDeleteComment,
+  onSelectComment,
 }) => {
   const pageBoxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -59,6 +75,16 @@ const PdfPageItemComponent: React.FC<PdfPageItemProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [renderedWidth, setRenderedWidth] = useState<number | null>(null);
   const [renderedHeight, setRenderedHeight] = useState<number | null>(null);
+
+  const handlePageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isCommentMode || !onAddComment) return;
+    const el = pageBoxRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const xPct = Math.max(2, Math.min(95, ((e.clientX - rect.left) / rect.width) * 100));
+    const yPct = Math.max(2, Math.min(95, ((e.clientY - rect.top) / rect.height) * 100));
+    onAddComment(pageNumber, Number(xPct.toFixed(1)), Number(yPct.toFixed(1)));
+  };
 
   // Compute dimensions based on rotation and scale
   const isRotatedSideways = rotation % 180 !== 0;
@@ -202,6 +228,8 @@ const PdfPageItemComponent: React.FC<PdfPageItemProps> = ({
       alignItems="center"
       justifyContent="center"
       flexShrink={0}
+      cursor={isCommentMode ? 'crosshair' : 'default'}
+      onClick={handlePageClick}
       onMouseUp={() => onMouseUp(pageNumber)}
     >
       {isVisible ? (
@@ -224,7 +252,7 @@ const PdfPageItemComponent: React.FC<PdfPageItemProps> = ({
             position="absolute"
             top={0}
             left={0}
-            pointerEvents="auto"
+            pointerEvents={isCommentMode ? 'none' : 'auto'}
             userSelect="text"
             opacity={1}
           />
@@ -251,6 +279,19 @@ const PdfPageItemComponent: React.FC<PdfPageItemProps> = ({
           Page {pageNumber}
         </Text>
       )}
+
+      {/* PDF Comment Pins on this page */}
+      {comments &&
+        comments.map((comment) => (
+          <PdfCommentPin
+            key={comment.id}
+            comment={comment}
+            isSelected={activeCommentId === comment.id}
+            onSelect={() => onSelectComment && onSelectComment(comment.id)}
+            onUpdate={(id, data) => onUpdateComment && onUpdateComment(id, data)}
+            onDelete={(id) => onDeleteComment && onDeleteComment(id)}
+          />
+        ))}
     </Box>
   );
 };
@@ -263,7 +304,10 @@ export const PdfPageItem = React.memo(PdfPageItemComponent, (prev, next) => {
     prev.colorFilter === next.colorFilter &&
     prev.defaultWidth === next.defaultWidth &&
     prev.defaultHeight === next.defaultHeight &&
-    prev.pdfDoc === next.pdfDoc
+    prev.pdfDoc === next.pdfDoc &&
+    prev.isCommentMode === next.isCommentMode &&
+    prev.activeCommentId === next.activeCommentId &&
+    prev.comments === next.comments
   );
 });
 
