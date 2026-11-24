@@ -87,6 +87,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   // Actions
   play: (lecture) => {
     if (lecture) {
+      if (!lecture.audioPath) {
+        console.warn('[PlayerStore] Cannot play lecture without audioPath:', lecture.title);
+        return;
+      }
       const savedPosStr =
         typeof window !== 'undefined'
           ? localStorage.getItem(`ilm_last_audio_pos_${lecture.id}`)
@@ -102,7 +106,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         isLooping: false,
       });
     } else {
-      set({ isPlaying: true });
+      if (get().currentLecture?.audioPath) {
+        set({ isPlaying: true });
+      }
     }
   },
 

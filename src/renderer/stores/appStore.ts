@@ -156,12 +156,29 @@ export const useAppStore = create<AppState>((set, get) => ({
             lectures: state.lectures.map((l) => (l.id === lec.id ? enrichedLec : l)),
             lecturesList: state.lecturesList.map((l) => (l.id === lec.id ? enrichedLec : l)),
           }));
-          const curPlayerLec = usePlayerStore.getState().currentLecture;
-          if (!curPlayerLec || curPlayerLec.id !== lec.id) {
-            usePlayerStore.setState({
-              currentLecture: enrichedLec,
-              currentTime: pos,
-            });
+          const playerState = usePlayerStore.getState();
+          const curPlayerLec = playerState.currentLecture;
+          const isAudioPlaying = playerState.isPlaying;
+
+          // If audio is currently playing, NEVER interrupt or stop it!
+          if (isAudioPlaying) {
+            // If selecting the currently playing lecture, update metadata (e.g. newly attached pdfPath)
+            if (curPlayerLec && curPlayerLec.id === lec.id) {
+              usePlayerStore.setState({
+                currentLecture: { ...curPlayerLec, ...enrichedLec },
+              });
+            }
+            return;
+          }
+
+          // If audio is not playing, only update player if the selected lecture has an audio file
+          if (enrichedLec.audioPath) {
+            if (!curPlayerLec || curPlayerLec.id !== lec.id) {
+              usePlayerStore.setState({
+                currentLecture: enrichedLec,
+                currentTime: pos,
+              });
+            }
           }
         }
       }).catch(console.error);

@@ -250,7 +250,15 @@ export const ImportDialog: React.FC<ImportDialogProps> = ({
         selectLecture(targetLectureId);
         const refreshed = await window.api.getLecture(targetLectureId);
         if (refreshed) {
-          usePlayerStore.setState({ currentLecture: refreshed });
+          const playerState = usePlayerStore.getState();
+          if (playerState.currentLecture?.id === refreshed.id) {
+            // Same lecture: merge new pdfPath into currentLecture without interrupting audio
+            usePlayerStore.setState({
+              currentLecture: { ...playerState.currentLecture, ...refreshed },
+            });
+          } else if (!playerState.isPlaying && refreshed.audioPath) {
+            usePlayerStore.setState({ currentLecture: refreshed });
+          }
         }
         await refreshCurrentLecture();
         setView('study');

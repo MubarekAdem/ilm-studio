@@ -30,6 +30,7 @@ import {
   FiUpload,
   FiLayers,
   FiSquare,
+  FiBookOpen,
 } from 'react-icons/fi';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/build/pdf.worker.entry';
@@ -428,6 +429,27 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
     }, 50);
   };
 
+  const handleOpenPdfDirectly = async () => {
+    try {
+      const result = await window.api.openFileDialog({
+        filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
+        properties: ['openFile'],
+      });
+      if (result && result.length > 0) {
+        const chosenPath = result[0];
+        try {
+          localStorage.setItem('ilm_last_pdf_path', chosenPath);
+        } catch {}
+        if (selectedLectureId) {
+          window.api.updateLecture(selectedLectureId, { pdfPath: chosenPath }).catch(console.error);
+        }
+        window.dispatchEvent(new CustomEvent('ilm_direct_pdf_opened', { detail: chosenPath }));
+      }
+    } catch (err) {
+      console.error('File dialog error:', err);
+    }
+  };
+
   // No path → placeholder
   if (!pdfPath) {
     return (
@@ -444,17 +466,28 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
           No PDF Attached
         </Text>
         <Text fontSize="sm" color={placeholderColor} textAlign="center" maxW="400px" mb={6}>
-          Import a textbook or matn PDF to study alongside the lecture audio.
+          Open a textbook or matn PDF to study alongside your current audio lecture.
         </Text>
-        <Button
-          leftIcon={<FiUpload />}
-          colorScheme="green"
-          size="sm"
-          variant="outline"
-          onClick={() => openImport({ tab: 'pdf' })}
-        >
-          Attach / Import PDF
-        </Button>
+        <HStack spacing={3}>
+          <Button
+            leftIcon={<FiUpload />}
+            colorScheme="green"
+            size="sm"
+            variant="solid"
+            onClick={handleOpenPdfDirectly}
+          >
+            Open PDF File
+          </Button>
+          <Button
+            leftIcon={<FiBookOpen />}
+            colorScheme="green"
+            size="sm"
+            variant="outline"
+            onClick={() => openImport({ tab: 'pdf' })}
+          >
+            Attach / Import to Course
+          </Button>
+        </HStack>
       </Flex>
     );
   }
@@ -584,6 +617,16 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
               variant="ghost"
               colorScheme={viewMode === 'continuous' ? 'green' : undefined}
               onClick={toggleViewMode}
+            />
+          </Tooltip>
+
+          <Tooltip label="Open / Switch PDF file">
+            <IconButton
+              aria-label="Open PDF file"
+              icon={<FiUpload />}
+              size="sm"
+              variant="ghost"
+              onClick={handleOpenPdfDirectly}
             />
           </Tooltip>
 

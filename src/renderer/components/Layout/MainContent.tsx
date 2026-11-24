@@ -242,12 +242,23 @@ const StudyView: React.FC = () => {
     lecturesList.find((l) => l.id === selectedLectureId) ||
     null;
 
-  // Effective PDF path: use the selected lecture's pdfPath if present;
-  // otherwise, fall back to any textbook/PDF attached to this course series or last opened PDF!
+  const [directPdfPath, setDirectPdfPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleDirectPdf = (e: any) => {
+      if (e.detail) {
+        setDirectPdfPath(e.detail);
+      }
+    };
+    window.addEventListener('ilm_direct_pdf_opened', handleDirectPdf);
+    return () => window.removeEventListener('ilm_direct_pdf_opened', handleDirectPdf);
+  }, []);
+
+  // Effective PDF path: use direct opened PDF, selected lecture's pdfPath, course textbook, or fallback
   const seriesTextbookPdf =
     lecturesList.find((l) => Boolean(l.pdfPath))?.pdfPath || null;
   const fallbackLastPdf = typeof window !== 'undefined' ? localStorage.getItem('ilm_last_pdf_path') : null;
-  const effectivePdfPath = lecture?.pdfPath || seriesTextbookPdf || fallbackLastPdf;
+  const effectivePdfPath = directPdfPath || lecture?.pdfPath || seriesTextbookPdf || fallbackLastPdf;
 
   useEffect(() => {
     if (effectivePdfPath) {
