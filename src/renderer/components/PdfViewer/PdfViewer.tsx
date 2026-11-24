@@ -28,33 +28,43 @@ import {
   FiCopy,
   FiEdit3,
   FiUpload,
+  FiLayers,
+  FiSquare,
 } from 'react-icons/fi';
 import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import { useAppStore } from '../../stores/appStore';
 import { PdfOutlineDrawer, OutlineItem } from './PdfOutlineDrawer';
 import { PdfSearchBar } from './PdfSearchBar';
+import { PdfPageItem, ColorFilterMode } from './PdfPageItem';
 import { toMediaUrl } from '../../utils/mediaUrl';
 
 interface PdfViewerProps {
   pdfPath: string | null;
 }
 
-type ColorFilterMode = 'normal' | 'dark' | 'sepia';
+type ViewMode = 'continuous' | 'single';
 
 const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const textLayerRef = useRef<HTMLDivElement>(null);
-  const renderTaskRef = useRef<any>(null);
-  const lastWheelTimeRef = useRef(0);
+  const scrollRafRef = useRef<number | null>(null);
+  const isProgrammaticScrollRef = useRef(false);
 
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [defaultWidth, setDefaultWidth] = useState(595);
+  const [defaultHeight, setDefaultHeight] = useState(842);
   const [scale, setScale] = useState(1.2);
   const [rotation, setRotation] = useState(0);
   const [colorFilter, setColorFilter] = useState<ColorFilterMode>('normal');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    try {
+      const saved = localStorage.getItem('ilm_pdf_view_mode');
+      if (saved === 'single' || saved === 'continuous') return saved;
+    } catch {}
+    return 'continuous';
+  });
   const [pageInput, setPageInput] = useState('1');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +78,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
 
   // Floating text selection toolbar
   const [selectedText, setSelectedText] = useState('');
+  const [selectedPage, setSelectedPage] = useState<number | null>(null);
   const [selectionCoords, setSelectionCoords] = useState<{ x: number; y: number } | null>(null);
 
   const targetPdfPage = useAppStore((s) => s.targetPdfPage);
@@ -81,6 +92,44 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   const placeholderColor = useColorModeValue('gray.400', 'gray.500');
   const toolbarBg = useColorModeValue('#f7f7f7', '#141414');
   const popoverBg = useColorModeValue('#ffffff', '#1f1f1f');
+  const containerBg = useColorModeValue('gray.100', '#0a0d14');
+
+  // Jump to page helper
+  const goToPage = useCallback(
+    (page: number, smooth: boolean = true) => {
+      const p = Math.max(1, Math.min(page, totalPages || 1));
+      setCurrentPage(p);
+      setPageInput(String(p));
+      setCurrentPdfPage(p);
+      if (pdfPath) {
+        try {
+          localStorage.setItem(`ilm_pdf_page_${pdfPath}`, String(p));
+          if (selectedLectureId) {
+            localStorage.setItem(`ilm_lecture_pdf_page_${selectedLectureId}`, String(p));
+          }
+        } catch {}
+      }
+
+      if (viewMode === 'continuous') {
+        const container = containerRef.current;
+        if (container) {
+          const el = container.querySelector<HTMLElement>(`[data-page-number="${p}"]`);
+          if (el) {
+            isProgrammaticScrollRef.current = true;
+            el.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+            setTimeout(() => {
+              isProgrammaticScrollRef.current = false;
+            }, smooth ? 500 : 50);
+          }
+        }
+      } else {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = 0;
+        }
+      }
+    },
+    [totalPages, setCurrentPdfPage, pdfPath, selectedLectureId, viewMode]
+  );
 
   // Load PDF document when path changes
   useEffect(() => {
@@ -115,6 +164,14 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
           setPdfDoc(doc);
           setTotalPages(doc.numPages);
 
+          // Get dimensions from first page for smooth placeholders
+          try {
+            const firstPage = await doc.getPage(1);
+            const vp1 = firstPage.getViewport({ scale: 1.0, rotation: 0 });
+            setDefaultWidth(vp1.width);
+            setDefaultHeight(vp1.height);
+          } catch {}
+
           // Restore last read page for this specific lecture or PDF file
           let initialPage = 1;
           const lectureKey = selectedLectureId ? `ilm_lecture_pdf_page_${selectedLectureId}` : null;
@@ -132,6 +189,16 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
           setCurrentPage(initialPage);
           setPageInput(String(initialPage));
           setCurrentPdfPage(initialPage);
+
+          // Scroll to initial page once pages are mounted
+          setTimeout(() => {
+            if (!cancelled && initialPage > 1 && containerRef.current) {
+              const el = containerRef.current.querySelector<HTMLElement>(`[data-page-number="${initialPage}"]`);
+              if (el) {
+                el.scrollIntoView({ behavior: 'auto', block: 'start' });
+              }
+            }
+          }, 150);
 
           // Extract table of contents outline in background
           try {
@@ -151,22 +218,20 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
                     const pageIndex = await doc.getPageIndex(item.dest[0]);
                     pageNum = pageIndex + 1;
                   }
-                  const subItems =
-                    item.items && item.items.length > 0
-                      ? await processOutline(item.items)
-                      : undefined;
 
                   processed.push({
                     title: item.title,
                     pageNumber: pageNum,
-                    items: subItems,
+                    items: item.items && item.items.length > 0 ? await processOutline(item.items) : undefined,
                   });
                 }
                 return processed;
               };
 
-              const parsedOutline = await processOutline(rawOutline);
-              if (!cancelled) setOutline(parsedOutline);
+              const processedOutline = await processOutline(rawOutline);
+              if (!cancelled) setOutline(processedOutline);
+            } else {
+              if (!cancelled) setOutline([]);
             }
           } catch (outlineErr) {
             console.warn('PDF outline extraction warning:', outlineErr);
@@ -178,37 +243,18 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
           console.error('PDF load error:', err);
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     loadPdf();
+
     return () => {
       cancelled = true;
     };
-  }, [pdfPath, setCurrentPdfPage]);
-
-  // Jump to page helper
-  const goToPage = useCallback(
-    (page: number) => {
-      const p = Math.max(1, Math.min(page, totalPages || 1));
-      setCurrentPage(p);
-      setPageInput(String(p));
-      setCurrentPdfPage(p);
-      if (pdfPath) {
-        try {
-          localStorage.setItem(`ilm_pdf_page_${pdfPath}`, String(p));
-          if (selectedLectureId) {
-            localStorage.setItem(`ilm_lecture_pdf_page_${selectedLectureId}`, String(p));
-          }
-        } catch {}
-      }
-      if (containerRef.current) {
-        containerRef.current.scrollTop = 0;
-      }
-    },
-    [totalPages, setCurrentPdfPage, pdfPath, selectedLectureId]
-  );
+  }, [pdfPath, setCurrentPdfPage, selectedLectureId]);
 
   // Jump to saved page when selecting a different lecture that shares this PDF
   useEffect(() => {
@@ -218,7 +264,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
     if (saved) {
       const p = parseInt(saved, 10);
       if (!isNaN(p) && p >= 1 && p <= totalPages && p !== currentPage) {
-        goToPage(p);
+        goToPage(p, false);
       }
     }
   }, [selectedLectureId, pdfDoc, totalPages, goToPage, currentPage]);
@@ -226,101 +272,54 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   // Handle external jump request (e.g. from clicking page chip in notes)
   useEffect(() => {
     if (targetPdfPage !== null && targetPdfPage >= 1 && targetPdfPage <= totalPages) {
-      goToPage(targetPdfPage);
+      goToPage(targetPdfPage, true);
       jumpToPdfPage(null as any);
     }
   }, [targetPdfPage, totalPages, goToPage, jumpToPdfPage]);
 
-  // Render active page instantly (<30ms) on high-performance canvas
-  const renderPage = useCallback(async () => {
-    if (!pdfDoc || !canvasRef.current) return;
+  // Track active page during continuous scroll
+  const updateActivePageFromScroll = useCallback(() => {
+    if (isProgrammaticScrollRef.current) return;
+    const container = containerRef.current;
+    if (!container || totalPages <= 0) return;
 
-    // Cancel any previous render in flight
-    if (renderTaskRef.current) {
-      try {
-        renderTaskRef.current.cancel();
-      } catch {
-        // ignore cancellation
-      }
-      renderTaskRef.current = null;
-    }
+    const containerRect = container.getBoundingClientRect();
+    const targetY = containerRect.top + Math.min(200, containerRect.height * 0.3);
 
-    try {
-      const page = await pdfDoc.getPage(currentPage);
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const viewport = page.getViewport({ scale, rotation });
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-
-      const renderTask = page.render({
-        canvasContext: ctx,
-        viewport,
-      });
-      renderTaskRef.current = renderTask;
-      await renderTask.promise;
-
-      // Render text layer overlay for direct Arabic selection & quoting
-      if (textLayerRef.current) {
-        textLayerRef.current.innerHTML = '';
-        textLayerRef.current.style.width = `${viewport.width}px`;
-        textLayerRef.current.style.height = `${viewport.height}px`;
-
-        const textContent = await page.getTextContent();
-        for (const item of textContent.items as any[]) {
-          if (!item.str) continue;
-          const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
-          const fontSize = Math.sqrt(tx[0] * tx[0] + tx[1] * tx[1]);
-
-          const span = document.createElement('span');
-          span.textContent = item.str;
-          span.style.position = 'absolute';
-          span.style.left = `${tx[4]}px`;
-          span.style.top = `${tx[5] - fontSize}px`;
-          span.style.fontSize = `${fontSize}px`;
-          span.style.fontFamily = item.fontName || 'sans-serif';
-          span.style.color = 'transparent';
-          span.style.cursor = 'text';
-          span.style.whiteSpace = 'pre';
-          span.style.lineHeight = '1';
-          span.style.transformOrigin = 'left bottom';
-          span.style.userSelect = 'text';
-          textLayerRef.current.appendChild(span);
-        }
-      }
-    } catch (err: any) {
-      if (err?.name !== 'RenderingCancelledException') {
-        console.error('Page render error:', err);
+    const pageElements = container.querySelectorAll<HTMLElement>('[data-page-number]');
+    let bestPage = currentPage;
+    for (let i = 0; i < pageElements.length; i++) {
+      const el = pageElements[i];
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= targetY && rect.bottom >= targetY) {
+        bestPage = parseInt(el.getAttribute('data-page-number') || '1', 10);
+        break;
       }
     }
-  }, [pdfDoc, currentPage, scale, rotation]);
 
-  useEffect(() => {
-    renderPage();
-  }, [renderPage]);
-
-  // Smooth mouse wheel scrolling for page turns
-  const handleWheel = (e: React.WheelEvent) => {
-    const now = Date.now();
-    if (now - lastWheelTimeRef.current < 260) return;
-
-    const el = containerRef.current;
-    if (!el || totalPages <= 1) return;
-
-    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 15;
-    const atTop = el.scrollTop <= 10;
-
-    if (e.deltaY > 40 && atBottom && currentPage < totalPages) {
-      lastWheelTimeRef.current = now;
-      goToPage(currentPage + 1);
-    } else if (e.deltaY < -40 && atTop && currentPage > 1) {
-      lastWheelTimeRef.current = now;
-      goToPage(currentPage - 1);
+    if (bestPage && bestPage !== currentPage) {
+      setCurrentPage(bestPage);
+      setPageInput(String(bestPage));
+      setCurrentPdfPage(bestPage);
+      if (pdfPath) {
+        try {
+          localStorage.setItem(`ilm_pdf_page_${pdfPath}`, String(bestPage));
+          if (selectedLectureId) {
+            localStorage.setItem(`ilm_lecture_pdf_page_${selectedLectureId}`, String(bestPage));
+          }
+        } catch {}
+      }
     }
-  };
+  }, [currentPage, totalPages, setCurrentPdfPage, pdfPath, selectedLectureId]);
+
+  const handleContainerScroll = useCallback(() => {
+    if (viewMode !== 'continuous') return;
+    if (scrollRafRef.current !== null) return;
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = null;
+      updateActivePageFromScroll();
+    });
+  }, [viewMode, updateActivePageFromScroll]);
 
   // Keyboard navigation for PDF reading
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -342,11 +341,12 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   };
 
   // Handle text selection for "Quote in Notes" floating pill
-  const handleMouseUp = () => {
+  const handlePageMouseUp = (pageNumber: number) => {
     const sel = window.getSelection();
     const text = sel ? sel.toString().trim() : '';
     if (text && text.length > 1) {
       setSelectedText(text);
+      setSelectedPage(pageNumber);
       if (sel && sel.rangeCount > 0) {
         const range = sel.getRangeAt(0);
         const rect = range.getBoundingClientRect();
@@ -363,10 +363,11 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
 
   const handleQuoteInNotes = () => {
     if (!selectedText) return;
-    setQuotedPdfText({ text: selectedText, page: currentPage });
+    const pageToQuote = selectedPage || currentPage;
+    setQuotedPdfText({ text: selectedText, page: pageToQuote });
     toast({
       title: 'Quoted in Note Editor',
-      description: `Page ${currentPage} matn text sent to notes.`,
+      description: `Page ${pageToQuote} text sent to notes.`,
       status: 'success',
       duration: 2000,
       isClosable: true,
@@ -391,15 +392,17 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
   };
 
   // Fit width based on container
-  const fitWidth = useCallback(() => {
+  const fitWidth = useCallback(async () => {
     if (!pdfDoc || !containerRef.current) return;
-
-    pdfDoc.getPage(currentPage).then((page) => {
-      const containerWidth = containerRef.current!.clientWidth - 32;
+    try {
+      const page = await pdfDoc.getPage(currentPage || 1);
+      const containerWidth = containerRef.current.clientWidth - 48;
       const viewport = page.getViewport({ scale: 1.0, rotation });
       const newScale = containerWidth / viewport.width;
-      setScale(Math.max(0.4, newScale));
-    });
+      setScale(Math.max(0.4, Math.min(3.0, newScale)));
+    } catch (e) {
+      console.error('Fit width error:', e);
+    }
   }, [pdfDoc, currentPage, rotation]);
 
   const handleRotate = () => {
@@ -413,17 +416,16 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
     }
   };
 
-  // Get CSS filter for canvas night reading
-  const getCanvasFilter = () => {
-    switch (colorFilter) {
-      case 'dark':
-        return 'invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(1.1)';
-      case 'sepia':
-        return 'sepia(0.4) contrast(1.05) brightness(0.95)';
-      case 'normal':
-      default:
-        return 'none';
-    }
+  const toggleViewMode = () => {
+    const nextMode: ViewMode = viewMode === 'continuous' ? 'single' : 'continuous';
+    setViewMode(nextMode);
+    try {
+      localStorage.setItem('ilm_pdf_view_mode', nextMode);
+    } catch {}
+    // Re-align to currentPage
+    setTimeout(() => {
+      goToPage(currentPage, false);
+    }, 50);
   };
 
   // No path → placeholder
@@ -434,22 +436,22 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         align="center"
         justify="center"
         direction="column"
-        gap={3}
         p={8}
+        bg={useColorModeValue('gray.50', '#0f172a')}
       >
-        <Icon as={FiFileText} boxSize={16} color={placeholderColor} />
-        <Text color={placeholderColor} fontSize="lg" fontWeight="medium">
+        <Icon as={FiFileText} boxSize={14} color="gray.500" mb={4} />
+        <Text fontSize="lg" fontWeight="semibold" color="gray.300" mb={1}>
           No PDF Attached
         </Text>
-        <Text color={placeholderColor} fontSize="sm" textAlign="center" maxW="300px">
+        <Text fontSize="sm" color={placeholderColor} textAlign="center" maxW="400px" mb={6}>
           Import a textbook or matn PDF to study alongside the lecture audio.
         </Text>
         <Button
-          size="sm"
-          colorScheme="green"
           leftIcon={<FiUpload />}
+          colorScheme="green"
+          size="sm"
+          variant="outline"
           onClick={() => openImport({ tab: 'pdf' })}
-          mt={2}
         >
           Attach / Import PDF
         </Button>
@@ -457,6 +459,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <Flex
@@ -464,8 +467,9 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         align="center"
         justify="center"
         direction="column"
-        gap={3}
         p={8}
+        bg={useColorModeValue('gray.50', '#0f172a')}
+        gap={3}
       >
         <Icon as={FiFileText} boxSize={12} color="red.400" />
         <Text color="red.400" fontSize="md">
@@ -523,7 +527,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
             leftIcon={<FiEdit3 />}
             onClick={handleQuoteInNotes}
           >
-            Quote in Notes (p. {currentPage})
+            Quote in Notes (p. {selectedPage || currentPage})
           </Button>
           <IconButton
             size="xs"
@@ -547,7 +551,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         flexShrink={0}
         spacing={2}
       >
-        {/* Left: Outline, Search, Page navigation */}
+        {/* Left: Outline, Search, View Mode, Page navigation */}
         <HStack spacing={1}>
           <Tooltip label="Table of Contents / Outline">
             <IconButton
@@ -572,9 +576,20 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
             />
           </Tooltip>
 
+          <Tooltip label={viewMode === 'continuous' ? 'Continuous Global Scroll (click for single page)' : 'Single Page View (click for continuous scroll)'}>
+            <IconButton
+              aria-label="Toggle scroll mode"
+              icon={viewMode === 'continuous' ? <FiLayers /> : <FiSquare />}
+              size="sm"
+              variant="ghost"
+              colorScheme={viewMode === 'continuous' ? 'green' : undefined}
+              onClick={toggleViewMode}
+            />
+          </Tooltip>
+
           <Box w="1px" h="18px" bg="whiteAlpha.200" mx={0.5} />
 
-          <Tooltip label="Previous page (Arrow Left / Wheel Up)">
+          <Tooltip label="Previous page (Arrow Left / Page Up)">
             <IconButton
               aria-label="Previous page"
               icon={<FiChevronLeft />}
@@ -605,7 +620,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
             </Text>
           </HStack>
 
-          <Tooltip label="Next page (Arrow Right / Wheel Down)">
+          <Tooltip label="Next page (Arrow Right / Page Down)">
             <IconButton
               aria-label="Next page"
               icon={<FiChevronRight />}
@@ -688,25 +703,30 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         pdfDoc={pdfDoc}
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        onJumpToPage={goToPage}
+        onJumpToPage={(p) => goToPage(p, true)}
       />
 
-      {/* Instant Single-Canvas Rendering Area with Wheel Scroll Page Turning */}
+      {/* Continuous Global Scroll / Single Page Area */}
       <Box
         ref={containerRef}
         flex={1}
-        overflow="auto"
+        overflowY="auto"
+        overflowX="auto"
         display="flex"
-        justifyContent="center"
-        alignItems="flex-start"
+        flexDirection="column"
+        alignItems="center"
         p={4}
-        onWheel={handleWheel}
-        bg={useColorModeValue('gray.50', '#0d1322')}
+        onScroll={handleContainerScroll}
+        bg={containerBg}
         css={{
-          '&::-webkit-scrollbar': { width: '8px', height: '8px' },
+          '&::-webkit-scrollbar': { width: '10px', height: '10px' },
+          '&::-webkit-scrollbar-track': { background: 'transparent' },
           '&::-webkit-scrollbar-thumb': {
-            background: 'rgba(255,255,255,0.15)',
-            borderRadius: '4px',
+            background: 'rgba(255,255,255,0.18)',
+            borderRadius: '5px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: 'rgba(255,255,255,0.3)',
           },
         }}
       >
@@ -714,31 +734,37 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
           <Text color="gray.400" alignSelf="center" mt={8}>
             Loading textbook...
           </Text>
-        ) : (
-          <Box position="relative" display="inline-block" onMouseUp={handleMouseUp}>
-            <canvas
-              ref={canvasRef}
-              style={{
-                maxWidth: '100%',
-                display: 'block',
-                borderRadius: '4px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                filter: getCanvasFilter(),
-                transition: 'filter 0.2s ease',
-              }}
+        ) : pdfDoc && totalPages > 0 ? (
+          viewMode === 'continuous' ? (
+            Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNum) => (
+              <PdfPageItem
+                key={pageNum}
+                pageNumber={pageNum}
+                pdfDoc={pdfDoc}
+                scale={scale}
+                rotation={rotation}
+                colorFilter={colorFilter}
+                defaultWidth={defaultWidth}
+                defaultHeight={defaultHeight}
+                containerRef={containerRef}
+                onMouseUp={handlePageMouseUp}
+              />
+            ))
+          ) : (
+            <PdfPageItem
+              key={currentPage}
+              pageNumber={currentPage}
+              pdfDoc={pdfDoc}
+              scale={scale}
+              rotation={rotation}
+              colorFilter={colorFilter}
+              defaultWidth={defaultWidth}
+              defaultHeight={defaultHeight}
+              containerRef={containerRef}
+              onMouseUp={handlePageMouseUp}
             />
-            {/* Transparent Text Layer for Selection */}
-            <Box
-              ref={textLayerRef}
-              position="absolute"
-              top={0}
-              left={0}
-              pointerEvents="auto"
-              userSelect="text"
-              opacity={1}
-            />
-          </Box>
-        )}
+          )
+        ) : null}
       </Box>
 
       {/* Outline Drawer (Table of contents) */}
@@ -746,7 +772,7 @@ const PdfViewerComponent: React.FC<PdfViewerProps> = ({ pdfPath }) => {
         isOpen={isOutlineOpen}
         onClose={() => setIsOutlineOpen(false)}
         outline={outline}
-        onSelectPage={goToPage}
+        onSelectPage={(p) => goToPage(p, true)}
         currentPage={currentPage}
       />
     </VStack>
