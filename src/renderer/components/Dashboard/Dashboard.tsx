@@ -80,6 +80,9 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
+    // Periodically refresh stats so background/active listening minutes update live
+    const interval = setInterval(loadDashboardData, 15000);
+    return () => clearInterval(interval);
   }, [loadDashboardData]);
 
   // Handle reviewing lecture

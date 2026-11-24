@@ -184,7 +184,7 @@ export const AudioPlayer: React.FC = () => {
 
   // Flush accumulated active listening time to SQLite study_sessions
   const flushStudySession = useCallback(() => {
-    if (!currentLecture || accumulatedActiveSecondsRef.current < 3) return;
+    if (!currentLecture || accumulatedActiveSecondsRef.current < 2) return;
     const durToLog = Math.round(accumulatedActiveSecondsRef.current);
     accumulatedActiveSecondsRef.current = 0;
     const endIso = new Date().toISOString();
@@ -437,27 +437,59 @@ export const AudioPlayer: React.FC = () => {
     howlRef.current?.rate(playbackSpeed);
   }, [playbackSpeed]);
 
-  // Animation loop: handles progress, A-B loop boundary check, and DB persistence
-  const updateProgress = useCallback(() => {
-    const howl = howlRef.current;
-    if (howl && howl.playing()) {
-      const rawPos = howl.seek();
-      const pos = typeof rawPos === 'number' && isFinite(rawPos) ? rawPos : 0;
+  // Robust background-resilient tracking timer:
+  // Runs continuously in foreground, background, and when window is minimized (with backgroundThrottling: false).
+  // Accurately tracks study seconds, saves playback position, and flushes to SQLite study_sessions every 15s.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const howl = howlRef.current;
+      if (!howl || !howl.playing() || !currentLecture) {
+        lastTickTimeRef.current = 0;
+        return;
+      }
 
-      // Track active listening seconds
       const now = Date.now();
       if (lastTickTimeRef.current > 0) {
         const delta = (now - lastTickTimeRef.current) / 1000;
-        if (delta > 0 && delta < 2) {
+        // Accept delta up to 300s (protects against background timer drift while counting all listening)
+        if (delta > 0 && delta < 300) {
           accumulatedActiveSecondsRef.current += delta;
         }
       }
       lastTickTimeRef.current = now;
 
-      // Flush session log to SQLite every 20 seconds of continuous listening
-      if (accumulatedActiveSecondsRef.current >= 20) {
+      // Flush to SQLite study_sessions every 15 seconds of active listening (foreground or background!)
+      if (accumulatedActiveSecondsRef.current >= 15) {
         flushStudySession();
       }
+
+      const rawPos = howl.seek();
+      const pos = typeof rawPos === 'number' && isFinite(rawPos) ? rawPos : 0;
+
+      // When minimized or hidden in background, update store currentTime from interval
+      if (document.hidden) {
+        usePlayerStore.getState().setCurrentTime(pos);
+      }
+
+      // Persist position to DB every 5 seconds
+      if (now - lastSaveTimeRef.current > 5000) {
+        lastSaveTimeRef.current = now;
+        const rawDur = howl.duration();
+        const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
+        const pct = dur > 0 ? Math.min(100, Math.round((pos / dur) * 100)) : 0;
+        persistAudioPosition(currentLecture.id, currentLecture.seriesId, pos, dur, pct);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentLecture, flushStudySession, persistAudioPosition]);
+
+  // Smooth 60fps UI progress animation for slider/knob while window is visible
+  const updateProgress = useCallback(() => {
+    const howl = howlRef.current;
+    if (howl && howl.playing()) {
+      const rawPos = howl.seek();
+      const pos = typeof rawPos === 'number' && isFinite(rawPos) ? rawPos : 0;
 
       // A-B Loop boundary check
       const { loopA, loopB, isLooping } = usePlayerStore.getState();
@@ -465,26 +497,40 @@ export const AudioPlayer: React.FC = () => {
         if (pos >= loopB) {
           howl.seek(loopA);
           usePlayerStore.getState().setCurrentTime(loopA);
-          rafRef.current = requestAnimationFrame(updateProgress);
+          if (!document.hidden) {
+            rafRef.current = requestAnimationFrame(updateProgress);
+          }
           return;
         }
       }
 
       usePlayerStore.getState().setCurrentTime(pos);
-
-      // Save position to SQLite & localStorage every 5 seconds
-      if (now - lastSaveTimeRef.current > 5000 && currentLecture) {
-        lastSaveTimeRef.current = now;
-        const rawDur = howl.duration();
-        const dur = typeof rawDur === 'number' && isFinite(rawDur) ? rawDur : 0;
-        const pct = dur > 0 ? Math.min(100, Math.round((pos / dur) * 100)) : 0;
-        persistAudioPosition(currentLecture.id, currentLecture.seriesId, pos, dur, pct);
-      }
-    } else {
-      lastTickTimeRef.current = 0;
     }
-    rafRef.current = requestAnimationFrame(updateProgress);
-  }, [currentLecture, flushStudySession, persistAudioPosition]);
+    if (!document.hidden) {
+      rafRef.current = requestAnimationFrame(updateProgress);
+    }
+  }, []);
+
+  // When window un-minimizes or returns to foreground:
+  // Resume smooth 60fps animation loop and flush any pending study seconds
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        if (howlRef.current && howlRef.current.playing()) {
+          const rawPos = howlRef.current.seek();
+          if (typeof rawPos === 'number' && isFinite(rawPos)) {
+            usePlayerStore.getState().setCurrentTime(rawPos);
+          }
+          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          rafRef.current = requestAnimationFrame(updateProgress);
+        }
+        flushStudySession();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [updateProgress, flushStudySession]);
 
   const handlePlayPause = () => {
     if (!currentLecture) return;

@@ -138,6 +138,7 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false, // needed for better-sqlite3 native module via preload
+      backgroundThrottling: false, // Keep timers and audio time-tracking running when minimized/backgrounded
     },
   });
 
