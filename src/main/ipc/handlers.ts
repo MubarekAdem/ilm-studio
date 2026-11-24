@@ -14,9 +14,12 @@ import type {
   ImportAudioOptions,
   ImportPdfOptions,
   OpenDialogOptions,
+  BackupCreateOptions,
+  BackupRestoreOptions,
 } from '../../shared/types';
 import * as database from '../database';
 import * as quranDb from '../database/quran';
+import * as backupService from '../backup/backupService';
 
 export function registerIpcHandlers(): void {
   // ── Series ──────────────────────────────────────────────────────────
@@ -332,5 +335,41 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IPC_CHANNELS.APP_GET_DATA_PATH, () => {
     return app.getPath('userData');
+  });
+
+  // ── Backup & Restore ────────────────────────────────────────────────
+  ipcMain.handle(IPC_CHANNELS.BACKUP_CREATE, async (_event, options: BackupCreateOptions) => {
+    return backupService.createBackup(options);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.BACKUP_INSPECT, async (_event, filePath: string) => {
+    return backupService.inspectBackup(filePath);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.BACKUP_RESTORE, async (_event, options: BackupRestoreOptions) => {
+    return backupService.restoreBackup(options);
+  });
+
+  ipcMain.handle(IPC_CHANNELS.BACKUP_CHOOSE_SAVE_PATH, async (_event, defaultName: string) => {
+    const res = await dialog.showSaveDialog({
+      title: 'Save Ilm Studio Backup',
+      defaultPath: defaultName || `ilm-studio-backup-${new Date().toISOString().slice(0, 10)}.ilm`,
+      filters: [
+        { name: 'Ilm Studio Backup (*.ilm)', extensions: ['ilm'] },
+        { name: 'Zip Archive (*.zip)', extensions: ['zip'] },
+      ],
+    });
+    return res.canceled ? null : res.filePath;
+  });
+
+  ipcMain.handle(IPC_CHANNELS.BACKUP_CHOOSE_OPEN_PATH, async () => {
+    const res = await dialog.showOpenDialog({
+      title: 'Select Ilm Studio Backup to Restore',
+      properties: ['openFile'],
+      filters: [
+        { name: 'Ilm Studio Backup (*.ilm, *.zip)', extensions: ['ilm', 'zip'] },
+      ],
+    });
+    return res.canceled || res.filePaths.length === 0 ? null : res.filePaths[0];
   });
 }

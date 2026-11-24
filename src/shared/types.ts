@@ -200,7 +200,69 @@ export const IPC_CHANNELS = {
 
   // App
   APP_GET_DATA_PATH: 'app:get-data-path',
+
+  // Backup & Restore
+  BACKUP_CREATE: 'backup:create',
+  BACKUP_INSPECT: 'backup:inspect',
+  BACKUP_RESTORE: 'backup:restore',
+  BACKUP_CHOOSE_SAVE_PATH: 'backup:choose-save-path',
+  BACKUP_CHOOSE_OPEN_PATH: 'backup:choose-open-path',
 } as const;
+
+export interface BackupManifest {
+  version: number;
+  appName: string;
+  appVersion: string;
+  createdAt: string;
+  hasMedia: boolean;
+  counts: {
+    series: number;
+    lectures: number;
+    notes: number;
+    tags: number;
+    bookmarks: number;
+    pdfComments: number;
+    chapters: number;
+    sessions: number;
+  };
+}
+
+export interface BackupCreateOptions {
+  includeMedia: boolean;
+  destinationPath?: string;
+}
+
+export interface BackupCreateResult {
+  success: boolean;
+  filePath?: string;
+  fileSizeBytes?: number;
+  manifest?: BackupManifest;
+  error?: string;
+}
+
+export interface BackupInspectResult {
+  success: boolean;
+  filePath: string;
+  manifest?: BackupManifest;
+  error?: string;
+}
+
+export interface BackupRestoreOptions {
+  filePath: string;
+  mode: 'merge' | 'clean';
+}
+
+export interface BackupRestoreResult {
+  success: boolean;
+  safetySnapshotPath?: string;
+  restoredCounts?: {
+    series: number;
+    lectures: number;
+    notes: number;
+    pdfComments: number;
+  };
+  error?: string;
+}
 
 export interface DailyStudyBreakdown {
   date: string;

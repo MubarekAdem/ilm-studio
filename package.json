@@ -9,7 +9,13 @@
     "package": "electron-forge package",
     "make": "electron-forge make"
   },
-  "keywords": ["islamic", "lecture", "study", "quran", "electron"],
+  "keywords": [
+    "islamic",
+    "lecture",
+    "study",
+    "quran",
+    "electron"
+  ],
   "author": "Mubarek",
   "license": "MIT",
   "devDependencies": {
@@ -20,6 +26,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^8.0.1",
     "@electron-forge/plugin-webpack": "^8.0.1",
     "@electron/rebuild": "^4.2.1",
+    "@types/adm-zip": "^0.5.8",
     "@types/better-sqlite3": "^7.6.12",
     "@types/howler": "^2.2.12",
     "@types/react": "^18.3.18",
@@ -43,6 +50,7 @@
     "@tiptap/pm": "^2.11.2",
     "@tiptap/react": "^2.11.2",
     "@tiptap/starter-kit": "^2.11.2",
+    "adm-zip": "^0.6.1",
     "better-sqlite3": "^11.8.1",
     "electron-squirrel-startup": "^1.0.1",
     "framer-motion": "^11.15.0",

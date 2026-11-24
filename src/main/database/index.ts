@@ -585,6 +585,16 @@ export function getDb(): Database.Database {
   return db;
 }
 
+export function closeDatabase(): void {
+  if (db && db.open) {
+    db.close();
+  }
+}
+
+export function reopenDatabase(): void {
+  initDatabase();
+}
+
 // ── Search ──────────────────────────────────────────────────────────────
 
 export function searchLibrary(query: string): LibrarySearchResult[] {

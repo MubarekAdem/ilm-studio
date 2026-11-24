@@ -21,6 +21,11 @@ import type {
   ImportAudioOptions,
   ImportPdfOptions,
   OpenDialogOptions,
+  BackupCreateOptions,
+  BackupCreateResult,
+  BackupInspectResult,
+  BackupRestoreOptions,
+  BackupRestoreResult,
 } from '../shared/types';
 
 const api = {
@@ -147,6 +152,18 @@ const api = {
   // ── App ─────────────────────────────────────────────────────────────
   getDataPath: (): Promise<string> =>
     ipcRenderer.invoke(IPC_CHANNELS.APP_GET_DATA_PATH),
+
+  // ── Backup & Restore ────────────────────────────────────────────────
+  createBackup: (options: BackupCreateOptions): Promise<BackupCreateResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.BACKUP_CREATE, options),
+  inspectBackup: (filePath: string): Promise<BackupInspectResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.BACKUP_INSPECT, filePath),
+  restoreBackup: (options: BackupRestoreOptions): Promise<BackupRestoreResult> =>
+    ipcRenderer.invoke(IPC_CHANNELS.BACKUP_RESTORE, options),
+  chooseBackupSavePath: (defaultName?: string): Promise<string | null> =>
+    ipcRenderer.invoke(IPC_CHANNELS.BACKUP_CHOOSE_SAVE_PATH, defaultName),
+  chooseBackupOpenPath: (): Promise<string | null> =>
+    ipcRenderer.invoke(IPC_CHANNELS.BACKUP_CHOOSE_OPEN_PATH),
 };
 
 export type ElectronAPI = typeof api;
